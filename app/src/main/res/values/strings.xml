@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Music Park</string>
+    <string name="tus_me_gusta">Tus me gusta</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="bienvenido">Bienvenido</string>
+    <string name="ready_for_a_new_experience">Ready for a new experience?</string>
+</resources>

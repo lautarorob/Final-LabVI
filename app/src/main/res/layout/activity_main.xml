@@ -43,27 +43,29 @@
         app:layout_constraintTop_toBottomOf="@+id/textWelcome"/>
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragment_vignettes"
+        android:id="@+id/fragment_vignettesIlike"
         android:name="com.project.appmusic.homeScreen.VignettesFragment"
+        android:tag="Ilike"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
-        app:layout_constraintEnd_toStartOf="@+id/fragment_vignettes2"
+        app:layout_constraintEnd_toStartOf="@+id/fragment_vignettesRegional"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textReady"
         tools:layout="@layout/fragment_vignettes" />
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragment_vignettes2"
+        android:id="@+id/fragment_vignettesRegional"
         android:name="com.project.appmusic.homeScreen.VignettesFragment"
+        android:tag="Regional"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginEnd="20dp"
-        app:layout_constraintStart_toEndOf="@+id/fragment_vignettes"
-        app:layout_constraintTop_toTopOf="@+id/fragment_vignettes"
+        app:layout_constraintStart_toEndOf="@+id/fragment_vignettesIlike"
+        app:layout_constraintTop_toTopOf="@+id/fragment_vignettesIlike"
         tools:layout="@layout/fragment_vignettes" />
 
     <androidx.fragment.app.FragmentContainerView

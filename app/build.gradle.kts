@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
 }
@@ -16,6 +18,19 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        //lector de propiedades
+        val properties = Properties()
+        val propertiesFile = project.rootProject.file("local.properties")
+        //si existe el archivo se lee como flujo de datos
+        if (propertiesFile.exists()) {
+            properties.load(propertiesFile.inputStream())
+        }
+        //se extrae la clve
+        val mapsKey = properties.getProperty("MAPS_API_KEY", "")
+
+        //inyeccion de la clave en el manifesto
+        manifestPlaceholders["mapsApiKey"] = mapsKey
+
     }
 
     buildTypes {
@@ -41,4 +56,13 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
+    implementation ("com.google.android.material:material:1.9.0")
+
+    //retrofit(cliente http)
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    //gson(convertidor de json a java)
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    //glide(descargar y mostrar caratulas)
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 }

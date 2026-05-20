@@ -42,7 +42,7 @@ public class VignettesFragment extends Fragment {
 
         if (typeVignette != null && typeVignette.equals("Ilike")) {
 
-            if (txtTitulo != null) txtTitulo.setText(R.string.tus_me_gusta);
+            if (txtTitulo != null) txtTitulo.setText(R.string.your_likes);
             if (imgVignette != null) imgVignette.setImageResource(R.drawable.like_logo);
             view.setOnClickListener(v -> {
                 Intent intent = new Intent(getContext(), LikedScreen.class);

@@ -43,12 +43,12 @@
             android:textColor="#B3B3B3"
             android:textSize="14sp" />
     </LinearLayout>
-
+<!--
     <ImageView
         android:id="@+id/optionsBtn"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:contentDescription="Opciones"
-        android:src="@android:drawable/ic_menu_more" />
+        android:src="@android:drawable/ic_menu_more" />-->
 
 </LinearLayout>

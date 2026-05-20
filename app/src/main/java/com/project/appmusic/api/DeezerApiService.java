@@ -10,4 +10,7 @@ import retrofit2.http.Query;
 public interface DeezerApiService {
     @GET("search")
     Call<DeezerListResponse<Song>> searchSongs(@Query("q") String nombreCancion);
+
+    @GET("chart/0/tracks")
+    Call<DeezerListResponse<Song>> getTopGlobalTracks();
 }

@@ -1,6 +1,6 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Estado seleccionado -->
-    <item android:state_checked="true" android:color="#0A0E17"/> <!-- O tu color oscuro -->
+    <item android:state_checked="true" android:color="#0A0E17"/>
     <!-- Estado por defecto (no seleccionado) -->
-    <item android:color="@color/white"/> <!-- Gris para no seleccionados -->
+    <item android:color="@color/white"/>
 </selector>

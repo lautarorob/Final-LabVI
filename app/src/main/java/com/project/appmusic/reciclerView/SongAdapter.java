@@ -1,5 +1,6 @@
 package com.project.appmusic.reciclerView;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,10 +22,10 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ListItemHolder
 
     private List<Song> songs;
 
-    private MainActivity mainActivity;
+    private Context context;
 
-    public SongAdapter(MainActivity mainActivity, List<Song> songs) {
-        this.mainActivity = mainActivity;
+    public SongAdapter(Context context, List<Song> songs) {
+        this.context = context;
         this.songs = songs;
     }
 
@@ -41,7 +42,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ListItemHolder
 
         holder.songTitle.setText(song.getTitulo());
         holder.artistName.setText(song.getNameArtist());
-        Glide.with(mainActivity)
+        Glide.with(context)
                 .load(song.getUrlPortada())
                 .into(holder.coverImage);
 
@@ -58,7 +59,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ListItemHolder
         TextView songTitle;
         TextView artistName;
         ImageView coverImage;
-        //  ImageView optionsBtn;
+       // ImageView optionsBtn;
 
         public ListItemHolder(@NonNull View itemView) {
             super(itemView);
@@ -66,7 +67,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ListItemHolder
             songTitle = itemView.findViewById(R.id.songTitle);
             artistName = itemView.findViewById(R.id.artistName);
             coverImage = itemView.findViewById(R.id.coverImage);
-            //  optionsBtn = itemView.findViewById(R.id.optionsBtn);
+            //optionsBtn = itemView.findViewById(R.id.optionsBtn);
 
             itemView.setClickable(true);
             itemView.setOnClickListener(this);
@@ -74,7 +75,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ListItemHolder
 
         @Override
         public void onClick(View v) {
-            Toast.makeText(mainActivity, songs.get(getAdapterPosition()).getTitulo(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, songs.get(getAdapterPosition()).getTitulo(), Toast.LENGTH_SHORT).show();
         }
     }
 }

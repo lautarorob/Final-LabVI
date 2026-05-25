@@ -57,7 +57,9 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
-    implementation ("com.google.android.material:material:1.9.0")
+    implementation("androidx.media3:media3-exoplayer:1.2.1")
+
+    implementation("com.google.android.material:material:1.9.0")
 
     //retrofit(cliente http)
     implementation("com.squareup.retrofit2:retrofit:2.9.0")

@@ -6,6 +6,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.media3.exoplayer.ExoPlayer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -14,6 +15,8 @@ import com.project.appmusic.viewModel.MusicViewModel;
 
 public class MainActivity extends AppCompatActivity {
 
+
+    private ExoPlayer exoPlayer;
     private RecyclerView recyclerSongs;
     private MusicViewModel musicViewModel;
 
@@ -30,12 +33,32 @@ public class MainActivity extends AppCompatActivity {
         //inicializacion viewmodel
         musicViewModel = new ViewModelProvider(this).get(MusicViewModel.class);
 
-        //suscripcion al canal de datos
+        // observador de canciones: pone las canciones en la pantalla
         musicViewModel.getListaCancionesLiveData().observe(this, songs -> {
-            //cuando la data real llega creamos el adaptador y lo acoplamos
-            SongAdapter songAdapter = new SongAdapter(MainActivity.this, songs);
-            recyclerSongs.setAdapter(songAdapter);
+            SongAdapter adapter = new SongAdapter(this, songs, song -> {
+                // Aquí simplemente avisamos al ViewModel: "El usuario tocó esta"
+                musicViewModel.playSong(song);
+            });
+            recyclerSongs.setAdapter(adapter);
         });
+
+        //observador de cancion actual
+        musicViewModel.getCurrentSong().observe(this, song -> {
+            //se delega la carga de la url
+            preparePlayer(song.getUrlAudio());
+        });
+
+        //observador de estado de reproduccion
+        musicViewModel.getIsPlaying().observe(this, isPlaying -> {
+            if (exoPlayer != null) {
+                if (isPlaying) {
+                    exoPlayer.play();
+                } else {
+                    exoPlayer.pause();
+                }
+            }
+        });
+
 
         //suscripcion al canal de errores
         musicViewModel.getErrorLiveData().observe(this, mensajeError -> {
@@ -46,6 +69,38 @@ public class MainActivity extends AppCompatActivity {
         //disparo de la peticion de red
         // musicViewModel.descargarCanciones("eminem");
 
-        musicViewModel.descargarTopGlobal();
+        musicViewModel.downloadTopGlobal();
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (exoPlayer != null) {
+            exoPlayer.release(); // apaga y destruye el reproductor
+            exoPlayer = null;
+        }
+    }
+
+    private void preparePlayer(String urlAudio) {
+        if (exoPlayer == null) {
+            exoPlayer = new ExoPlayer.Builder(this).build();
+        }else{
+            exoPlayer.stop();
+            exoPlayer.clearMediaItems();
+        }
+
+        // objetos de exoPlayer "MediaItem" para cargar las URLs
+        androidx.media3.common.MediaItem mediaItem = androidx.media3.common.MediaItem.fromUri(urlAudio);
+        exoPlayer.setMediaItem(mediaItem);
+
+        // prepara el audio en segundo plano automáticamente
+        exoPlayer.prepare();
+
+        // si el ViewModel dice que debería estar sonando, le damos play
+        if (Boolean.TRUE.equals(musicViewModel.getIsPlaying().getValue())) {
+            exoPlayer.play();
+        }
+
+    }
+
 }

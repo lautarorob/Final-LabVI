@@ -24,9 +24,12 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ListItemHolder
 
     private Context context;
 
-    public SongAdapter(Context context, List<Song> songs) {
+    private OnSongClickListener listener;
+
+    public SongAdapter(Context context, List<Song> songs, OnSongClickListener listener) {
         this.context = context;
         this.songs = songs;
+        this.listener = listener;
     }
 
     //inflado del item_song y creacion del holder
@@ -59,7 +62,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ListItemHolder
         TextView songTitle;
         TextView artistName;
         ImageView coverImage;
-       // ImageView optionsBtn;
+        // ImageView optionsBtn;
 
         public ListItemHolder(@NonNull View itemView) {
             super(itemView);
@@ -75,7 +78,15 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ListItemHolder
 
         @Override
         public void onClick(View v) {
-            Toast.makeText(context, songs.get(getAdapterPosition()).getTitulo(), Toast.LENGTH_SHORT).show();
+            int position = getAdapterPosition();
+            if (position != RecyclerView.NO_POSITION && listener != null) {
+                listener.onSongClick(songs.get(position));
+            }
         }
+    }
+
+    //interfaz para comunicacion con main
+    public interface OnSongClickListener {
+        void onSongClick(Song song);
     }
 }

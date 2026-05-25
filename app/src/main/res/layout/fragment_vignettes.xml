@@ -10,7 +10,7 @@
     android:background="@drawable/bg_vignettes_logo"
     android:clickable="true"
     android:focusable="true"
-    tools:context=".homeScreen.VignettesFragment">
+    tools:context=".homeFragments.VignettesFragment">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"

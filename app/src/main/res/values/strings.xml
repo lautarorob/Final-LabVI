@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Music Park</string>
     <string name="your_likes">Your likes</string>
-    <string name="regionales">Regionales</string>
+    <string name="regional">Regional</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="welcome">Welcome</string>

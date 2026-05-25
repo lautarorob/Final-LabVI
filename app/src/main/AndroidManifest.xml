@@ -16,14 +16,6 @@
         android:theme="@style/Theme.AppMusic">
 
         <activity
-            android:name=".likedSongsScreen.LikedScreen"
-            android:exported="false" />
-
-        <activity
-            android:name=".regionalScreen.RegionalScreen"
-            android:exported="false" />
-
-        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

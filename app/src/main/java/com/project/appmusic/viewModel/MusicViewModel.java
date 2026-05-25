@@ -20,6 +20,18 @@ public class MusicViewModel extends ViewModel {
     //canal de errores
     private MutableLiveData<String> errorLiveData = new MutableLiveData<>();
 
+    //estado de reproduccion
+    private MutableLiveData<Song> currentSong = new MutableLiveData<>();
+    private MutableLiveData<Boolean> isPlaying = new MutableLiveData<>();
+
+    public MutableLiveData<Song> getCurrentSong() {
+        return currentSong;
+    }
+
+    public MutableLiveData<Boolean> getIsPlaying() {
+        return isPlaying;
+    }
+
     public MutableLiveData<List<Song>> getListaCancionesLiveData() {
         return listaCancionesLiveData;
     }
@@ -29,7 +41,7 @@ public class MusicViewModel extends ViewModel {
         return errorLiveData;
     }
 
-    public void descargarCanciones(String nombreArtista) {
+    public void downloadSongs(String nombreArtista) {
         //llamado a la instancia de retrofit
         DeezerApiService api = RetrofitClient.getApiService();
         //consulta
@@ -62,7 +74,7 @@ public class MusicViewModel extends ViewModel {
     }
 
 
-    public void descargarTopGlobal() {
+    public void downloadTopGlobal() {
         DeezerApiService api = RetrofitClient.getApiService();
 
         Call<DeezerListResponse<Song>> call = api.getTopGlobalTracks();
@@ -88,6 +100,17 @@ public class MusicViewModel extends ViewModel {
                 errorLiveData.postValue("Error de red: " + t.getMessage());
             }
         });
+    }
+
+
+    //metodos para reproducir la cancion
+    public void playSong(Song song) {
+        currentSong.setValue(song);
+        isPlaying.setValue(true);
+    }
+
+    public void togglePlayback() {
+        isPlaying.setValue(!isPlaying.getValue());
     }
 
 

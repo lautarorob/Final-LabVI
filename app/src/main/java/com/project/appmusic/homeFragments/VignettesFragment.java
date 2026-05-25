@@ -1,4 +1,4 @@
-package com.project.appmusic.homeScreen;
+package com.project.appmusic.homeFragments;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,8 +14,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.project.appmusic.R;
-import com.project.appmusic.likedSongsScreen.LikedScreen;
-import com.project.appmusic.regionalScreen.RegionalScreen;
+import com.project.appmusic.likedSongsFragments.LikedSongsFragment;
+import com.project.appmusic.regionalFragments.RegionalFragment;
 
 public class VignettesFragment extends Fragment {
 
@@ -39,25 +39,29 @@ public class VignettesFragment extends Fragment {
 
         String typeVignette = getTag();
 
-
         if (typeVignette != null && typeVignette.equals("Ilike")) {
-
             if (txtTitulo != null) txtTitulo.setText(R.string.your_likes);
             if (imgVignette != null) imgVignette.setImageResource(R.drawable.like_logo);
+
             view.setOnClickListener(v -> {
-                Intent intent = new Intent(getContext(), LikedScreen.class);
-                startActivity(intent);
+                // NAVEGACIÓN PROFESIONAL: Apuntamos al contenedor de pantalla completa
+                getParentFragmentManager().beginTransaction()
+                        .replace(R.id.main_fullscreen_container, new LikedSongsFragment())
+                        .addToBackStack(null)
+                        .commit();
             });
 
         } else {
-
-            if (txtTitulo != null) txtTitulo.setText(R.string.regionales);
+            if (txtTitulo != null) txtTitulo.setText(R.string.regional);
             if (imgVignette != null) imgVignette.setImageResource(R.drawable.regional_logo);
-            view.setOnClickListener(v -> {
-                Intent intent = new Intent(getContext(), RegionalScreen.class);
-                startActivity(intent);
-            });
 
+            view.setOnClickListener(v -> {
+                // NAVEGACIÓN PROFESIONAL: Apuntamos al mismo contenedor de pantalla completa
+                getParentFragmentManager().beginTransaction()
+                        .replace(R.id.main_fullscreen_container, new RegionalFragment())
+                        .addToBackStack(null)
+                        .commit();
+            });
         }
     }
 }

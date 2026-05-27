@@ -1,6 +1,7 @@
 package com.project.appmusic;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -35,8 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
         // observador de canciones: pone las canciones en la pantalla
         musicViewModel.getListaCancionesLiveData().observe(this, songs -> {
-            SongAdapter adapter = new SongAdapter(this, songs, song -> {
-                // Aquí simplemente avisamos al ViewModel: "El usuario tocó esta"
+            SongAdapter adapter = new SongAdapter(this, songs, true, song -> {
                 musicViewModel.playSong(song);
             });
             recyclerSongs.setAdapter(adapter);
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
     private void preparePlayer(String urlAudio) {
         if (exoPlayer == null) {
             exoPlayer = new ExoPlayer.Builder(this).build();
-        }else{
+        } else {
             exoPlayer.stop();
             exoPlayer.clearMediaItems();
         }
@@ -101,6 +101,13 @@ public class MainActivity extends AppCompatActivity {
             exoPlayer.play();
         }
 
+    }
+
+    public void setMiniPlayerVisibility(boolean isVisible) {
+        View miniPlayerContainer = findViewById(R.id.fragment_mini_player);
+        if (miniPlayerContainer != null) {
+            miniPlayerContainer.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        }
     }
 
 }

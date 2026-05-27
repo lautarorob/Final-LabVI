@@ -44,7 +44,7 @@ public class VignettesFragment extends Fragment {
             if (imgVignette != null) imgVignette.setImageResource(R.drawable.like_logo);
 
             view.setOnClickListener(v -> {
-                // NAVEGACIÓN PROFESIONAL: Apuntamos al contenedor de pantalla completa
+                // apuntamos al contenedor de pantalla completa
                 getParentFragmentManager().beginTransaction()
                         .replace(R.id.main_fullscreen_container, new LikedSongsFragment())
                         .addToBackStack(null)
@@ -56,7 +56,7 @@ public class VignettesFragment extends Fragment {
             if (imgVignette != null) imgVignette.setImageResource(R.drawable.regional_logo);
 
             view.setOnClickListener(v -> {
-                // NAVEGACIÓN PROFESIONAL: Apuntamos al mismo contenedor de pantalla completa
+                // apuntamos al mismo contenedor de pantalla completa
                 getParentFragmentManager().beginTransaction()
                         .replace(R.id.main_fullscreen_container, new RegionalFragment())
                         .addToBackStack(null)

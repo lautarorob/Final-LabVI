@@ -11,6 +11,6 @@ public interface DeezerApiService {
     @GET("search")
     Call<DeezerListResponse<Song>> searchSongs(@Query("q") String nombreCancion);
 
-    @GET("chart/0/tracks")
+    @GET("chart/0/tracks?limit=100")
     Call<DeezerListResponse<Song>> getTopGlobalTracks();
 }

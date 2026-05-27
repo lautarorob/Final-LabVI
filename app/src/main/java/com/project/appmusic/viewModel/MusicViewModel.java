@@ -68,7 +68,7 @@ public class MusicViewModel extends ViewModel {
             @Override
             public void onFailure(Call<DeezerListResponse<Song>> call, Throwable t) {
                 // falla de red
-                errorLiveData.postValue("Error de red: " + t.getMessage());
+                errorLiveData.postValue("Error de red");
             }
         });
     }
@@ -97,7 +97,7 @@ public class MusicViewModel extends ViewModel {
 
             @Override
             public void onFailure(Call<DeezerListResponse<Song>> call, Throwable t) {
-                errorLiveData.postValue("Error de red: " + t.getMessage());
+                errorLiveData.postValue("Error de red");
             }
         });
     }

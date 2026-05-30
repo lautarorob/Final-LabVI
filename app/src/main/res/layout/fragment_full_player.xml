@@ -4,8 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".playbackFragments.FullPlayerFragment"
-    android:background="@color/black">
+    android:clickable="true"
+    android:focusable="true"
+    android:id="@+id/player_root"
+    tools:context=".playbackFragments.FullPlayerFragment">
 
     <ImageView
         android:id="@+id/arrow_down"
@@ -29,11 +31,13 @@
         app:layout_constraintTop_toTopOf="@+id/arrow_down"
         app:layout_constraintBottom_toBottomOf="@+id/arrow_down" />
 
-    <ImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/albumCover"
         android:layout_width="300dp"
         android:layout_height="300dp"
         android:layout_marginTop="32dp"
+        android:scaleType="centerCrop"
+        app:shapeAppearanceOverlay="@style/RoundedAlbumCover"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/arrow_down"
@@ -95,7 +99,7 @@
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/playPause"
-        tools:src="@drawable/ic_shuffle" />
+        android:src="@drawable/ic_shuffle" />
 
     <ImageView
         android:id="@+id/skipPrevious"

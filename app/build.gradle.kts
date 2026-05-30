@@ -57,6 +57,8 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
+    implementation("androidx.palette:palette:1.0.0")
+
     implementation("androidx.media3:media3-exoplayer:1.2.1")
 
     implementation("com.google.android.material:material:1.9.0")

@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.project.appmusic.R;
 import com.project.appmusic.viewModel.MusicViewModel;
 
@@ -65,7 +66,7 @@ public class MiniPlayerFragment extends Fragment {
                 view.setVisibility(View.VISIBLE);
                 txtSongTitle.setText(song.getTitulo());
                 txtArtistName.setText(song.getNameArtist());
-                Glide.with(this).load(song.getUrlPortada()).into(imgCover);
+                Glide.with(this).load(song.getUrlPortada()).transform(new RoundedCorners(16)).into(imgCover);
             }
         });
 

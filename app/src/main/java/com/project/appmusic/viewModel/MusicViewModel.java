@@ -2,6 +2,7 @@ package com.project.appmusic.viewModel;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import androidx.media3.exoplayer.ExoPlayer;
 
 import com.project.appmusic.Song;
 import com.project.appmusic.api.DeezerApiService;
@@ -22,7 +23,15 @@ public class MusicViewModel extends ViewModel {
 
     //estado de reproduccion
     private MutableLiveData<Song> currentSong = new MutableLiveData<>();
+
     private MutableLiveData<Boolean> isPlaying = new MutableLiveData<>();
+
+    private MutableLiveData<Boolean> isShuffle = new MutableLiveData<>(false);
+
+    public static final int REPEAT_MODE_OFF = 0;
+    public static final int REPEAT_MODE_ALL = 1;
+    public static final int REPEAT_MODE_ONE = 2;
+
 
     public MutableLiveData<Song> getCurrentSong() {
         return currentSong;
@@ -35,6 +44,17 @@ public class MusicViewModel extends ViewModel {
     public MutableLiveData<List<Song>> getListaCancionesLiveData() {
         return listaCancionesLiveData;
     }
+
+    private final MutableLiveData<Integer> repeatMode = new MutableLiveData<>(REPEAT_MODE_OFF);
+
+    public MutableLiveData<Boolean> getIsShuffle() {
+        return isShuffle;
+    }
+
+    public MutableLiveData<Integer> getRepeatMode() {
+        return repeatMode;
+    }
+
 
     //getter para que la vista escuche los errores
     public MutableLiveData<String> getErrorLiveData() {
@@ -111,6 +131,125 @@ public class MusicViewModel extends ViewModel {
 
     public void togglePlayback() {
         isPlaying.setValue(!isPlaying.getValue());
+    }
+
+
+    private ExoPlayer exoPlayer;
+
+    // metodo para obtener el milisegundo exacto en el que va la cancion
+    public long getCurrentPosition() {
+        if (exoPlayer != null) {
+            return exoPlayer.getCurrentPosition();
+        }
+        return 0;
+    }
+
+    // metodo para recibir el reproductor real
+    public void setExoPlayer(ExoPlayer player) {
+        this.exoPlayer = player;
+    }
+
+    // metodo para obtener cuánto dura el archivo cargado en total
+    public long getDuration() {
+        if (exoPlayer != null) {
+            long duration = exoPlayer.getDuration();
+            if (duration < 0) {
+                return 0;
+            }
+            return duration;
+        }
+        return 0;
+    }
+
+
+    public void playNextSong() {
+        List<Song> currentPlaylist = listaCancionesLiveData.getValue();
+        Song songPlayed = currentSong.getValue();
+
+        // operadores ternarios de seguridad para leer los estados
+        int mode = repeatMode.getValue() != null ? repeatMode.getValue() : REPEAT_MODE_OFF;
+        boolean shuffleActive = isShuffle.getValue() != null ? isShuffle.getValue() : false;
+
+        if (songPlayed != null && currentPlaylist != null) {
+
+            // PRIORIDAD ALTA: Repetir Uno
+            if (mode == REPEAT_MODE_ONE) {
+                if (exoPlayer != null) {
+                    exoPlayer.seekTo(0);
+                }
+                return;
+            }
+
+            int currentSongIndex = currentPlaylist.indexOf(songPlayed);
+
+            // PRIORIDAD MEDIA: Modo Aleatorio
+            if (shuffleActive && currentPlaylist.size() > 1) {
+                java.util.Random random = new java.util.Random();
+                int randomIndex = currentSongIndex;
+
+                // evita repetir la misma cancion consecutivamente
+                while (randomIndex == currentSongIndex) {
+                    // nextInt(max) devuelve un número entre 0  y max
+                    randomIndex = random.nextInt(currentPlaylist.size());
+                }
+
+                playSong(currentPlaylist.get(randomIndex));
+                return;
+            }
+
+            // PRIORIDAD BAJA: Avance secuencial normal
+            if (currentSongIndex != -1 && currentSongIndex < currentPlaylist.size() - 1) {
+                Song nextSong = currentPlaylist.get(currentSongIndex + 1);
+                playSong(nextSong);
+            } else {
+                // final de la playlist
+                if (mode == REPEAT_MODE_ALL) {
+                    Song firstSong = currentPlaylist.get(0);
+                    playSong(firstSong);
+                } else {
+                    isPlaying.setValue(false);
+                }
+            }
+        }
+    }
+
+    public void playPreviousSong() {
+        // se evalua la posicion actual del motor de audio
+        long posicionActual = getCurrentPosition();
+
+        // si la pista avanzo mas de 3 segundos se reinicia
+        if (posicionActual > 3000) {
+            if (exoPlayer != null) {
+                exoPlayer.seekTo(0);
+            }
+            return;
+        }
+
+        List<Song> currentPlaylist = listaCancionesLiveData.getValue();
+        Song songPlayed = currentSong.getValue();
+        if (songPlayed != null && currentPlaylist != null) {
+            int currentSongIndex = currentPlaylist.indexOf(songPlayed);
+            if (currentSongIndex != -1 && currentSongIndex > 0) {
+                Song previousSong = currentPlaylist.get(currentSongIndex - 1);
+                currentSong.setValue(previousSong);
+            } else {
+                currentSong.setValue(currentPlaylist.get(currentPlaylist.size() - 1));
+            }
+        }
+    }
+
+    public void toggleShuffle() {
+        Boolean currentState = isShuffle.getValue();
+        if (currentState != null) {
+            isShuffle.setValue(!currentState);
+        }
+    }
+
+    public void toggleRepeat() {
+        Integer currentMode = repeatMode.getValue();
+        if (currentMode != null) {
+            repeatMode.setValue((currentMode + 1) % 3);
+        }
     }
 
 

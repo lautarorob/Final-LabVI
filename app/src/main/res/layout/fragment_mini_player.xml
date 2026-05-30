@@ -9,10 +9,11 @@
     android:orientation="horizontal"
     android:padding="12dp">
 
-    <ImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/coverImage"
         android:layout_width="56dp"
         android:layout_height="56dp"
+        app:shapeAppearanceOverlay="@style/RoundedAlbumCover"
         android:background="#333333"
         android:scaleType="centerCrop" />
 

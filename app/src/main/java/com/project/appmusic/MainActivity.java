@@ -84,6 +84,16 @@ public class MainActivity extends AppCompatActivity {
     private void preparePlayer(String urlAudio) {
         if (exoPlayer == null) {
             exoPlayer = new ExoPlayer.Builder(this).build();
+            musicViewModel.setExoPlayer(exoPlayer);
+            //observador de cambio de cancion
+            exoPlayer.addListener(new ExoPlayer.Listener() {
+                @Override
+                public void onPlaybackStateChanged(int playbackState) {
+                    if (playbackState == ExoPlayer.STATE_ENDED) {
+                        musicViewModel.playNextSong();
+                    }
+                }
+            });
         } else {
             exoPlayer.stop();
             exoPlayer.clearMediaItems();

@@ -4,6 +4,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.media3.exoplayer.ExoPlayer;
 
+import com.project.appmusic.Playlist;
 import com.project.appmusic.Song;
 import com.project.appmusic.api.DeezerApiService;
 import com.project.appmusic.api.DeezerListResponse;
@@ -89,6 +90,66 @@ public class MusicViewModel extends ViewModel {
             public void onFailure(Call<DeezerListResponse<Song>> call, Throwable t) {
                 // falla de red
                 errorLiveData.postValue("Error de red");
+            }
+        });
+    }
+
+
+    private MutableLiveData<List<Song>> listaRegionalLiveData = new MutableLiveData<>();
+
+    public MutableLiveData<List<Song>> getListaRegionalLiveData() {
+        return listaRegionalLiveData;
+    }
+    public void buscarIdPorPais(String pais) {
+        String terminoBusqueda = "Top 50" + pais;
+        DeezerApiService api = RetrofitClient.getApiService();
+
+        api.buscarPlaylistRegional(terminoBusqueda).enqueue(new Callback<DeezerListResponse<Playlist>>() {
+            @Override
+            public void onResponse(Call<DeezerListResponse<Playlist>> call, Response<DeezerListResponse<Playlist>> response) {
+                if (response.isSuccessful() && response.body() != null && !response.body().getData().isEmpty()) {
+
+                    // Extraemos el número de la lista
+                    long idEncontrado = response.body().getData().get(0).getId();
+
+                    downloadRegional(idEncontrado);
+
+                } else {
+                    errorLiveData.postValue("No se encontró una playlist oficial para " + pais);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<DeezerListResponse<Playlist>> call, Throwable t) {
+                errorLiveData.postValue("Error al buscar el ID: " + t.getMessage());
+            }
+        });
+    }
+
+    public void downloadRegional(long playlistId) {
+        DeezerApiService api = RetrofitClient.getApiService();
+
+        Call<DeezerListResponse<Song>> call = api.getTopRegionalTracks(playlistId);
+
+        call.enqueue(new Callback<DeezerListResponse<Song>>() {
+            @Override
+            public void onResponse(Call<DeezerListResponse<Song>> call, Response<DeezerListResponse<Song>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Song> canciones = response.body().getData();
+
+                    if (!canciones.isEmpty()) {
+                        listaRegionalLiveData.postValue(canciones);
+                    } else {
+                        errorLiveData.postValue("La playlist regional está vacía.");
+                    }
+                } else {
+                    errorLiveData.postValue("Error en la respuesta del servidor.");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<DeezerListResponse<Song>> call, Throwable t) {
+                errorLiveData.postValue("Error de red: " + t.getMessage());
             }
         });
     }

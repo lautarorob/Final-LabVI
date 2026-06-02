@@ -70,6 +70,38 @@ public class MainActivity extends AppCompatActivity {
         // musicViewModel.descargarCanciones("eminem");
 
         musicViewModel.downloadTopGlobal();
+
+        //barra de herramientas inferior
+/*
+        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
+
+        bottomNav.setOnItemSelectedListener(item -> {
+
+            androidx.fragment.app.Fragment fragmentSeleccionado = null;
+
+            int itemId = item.getItemId();
+
+            if (itemId == R.id.nav_home) {
+                fragmentSeleccionado = new MainActivity();
+            } else if (itemId == R.id.nav_search) {
+                fragmentSeleccionado = new TuFragmentoSearch();
+            } else if (itemId == R.id.nav_library) {
+                fragmentSeleccionado = new RegionalFragment();
+            }
+
+
+            if (fragmentSeleccionado != null) {
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.tu_contenedor_principal, fragmentSeleccionado)
+                        .commit();
+
+                // Retornar true es obligatorio para que el ícono cambie de color visualmente
+                return true;
+            }
+
+            return false;
+        });*/
     }
 
     @Override

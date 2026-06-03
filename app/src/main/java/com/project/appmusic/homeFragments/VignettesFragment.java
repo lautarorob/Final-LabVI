@@ -45,7 +45,7 @@ public class VignettesFragment extends Fragment {
 
             view.setOnClickListener(v -> {
                 // apuntamos al contenedor de pantalla completa
-                getParentFragmentManager().beginTransaction()
+                requireActivity().getSupportFragmentManager().beginTransaction()
                         .replace(R.id.main_fullscreen_container, new LikedSongsFragment())
                         .addToBackStack(null)
                         .commit();
@@ -57,7 +57,7 @@ public class VignettesFragment extends Fragment {
 
             view.setOnClickListener(v -> {
                 // apuntamos al mismo contenedor de pantalla completa
-                getParentFragmentManager().beginTransaction()
+                requireActivity().getSupportFragmentManager().beginTransaction()
                         .replace(R.id.main_fullscreen_container, new RegionalFragment())
                         .addToBackStack(null)
                         .commit();

@@ -2,23 +2,23 @@ package com.project.appmusic;
 
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.exoplayer.ExoPlayer;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import com.project.appmusic.reciclerView.SongAdapter;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.project.appmusic.homeFragments.HomeFragment;
+import com.project.appmusic.regionalFragments.RegionalFragment;
+import com.project.appmusic.toolbarFragments.LibraryFragment;
+import com.project.appmusic.toolbarFragments.SearchFragment;
 import com.project.appmusic.viewModel.MusicViewModel;
 
 public class MainActivity extends AppCompatActivity {
 
-
     private ExoPlayer exoPlayer;
-    private RecyclerView recyclerSongs;
     private MusicViewModel musicViewModel;
 
     @Override
@@ -27,20 +27,14 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        //vinculación de vistas
-        recyclerSongs = findViewById(R.id.recyclersongs);
-        recyclerSongs.setLayoutManager(new LinearLayoutManager(this));
-
         //inicializacion viewmodel
         musicViewModel = new ViewModelProvider(this).get(MusicViewModel.class);
 
-        // observador de canciones: pone las canciones en la pantalla
-        musicViewModel.getListaCancionesLiveData().observe(this, songs -> {
-            SongAdapter adapter = new SongAdapter(this, songs, true, song -> {
-                musicViewModel.playSong(song);
-            });
-            recyclerSongs.setAdapter(adapter);
-        });
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.main_fullscreen_container, new HomeFragment())
+                    .commit();
+        }
 
         //observador de cancion actual
         musicViewModel.getCurrentSong().observe(this, song -> {
@@ -59,41 +53,26 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-        //suscripcion al canal de errores
-        musicViewModel.getErrorLiveData().observe(this, mensajeError -> {
-            //cuando llega el mensaje de error se muestran
-            Toast.makeText(MainActivity.this, mensajeError, Toast.LENGTH_SHORT).show();
-        });
-
-        //disparo de la peticion de red
-        // musicViewModel.descargarCanciones("eminem");
-
-        musicViewModel.downloadTopGlobal();
-
         //barra de herramientas inferior
-/*
-        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
 
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
         bottomNav.setOnItemSelectedListener(item -> {
 
-            androidx.fragment.app.Fragment fragmentSeleccionado = null;
-
+            Fragment fragmentSeleccionado = null;
             int itemId = item.getItemId();
 
             if (itemId == R.id.nav_home) {
-                fragmentSeleccionado = new MainActivity();
+                fragmentSeleccionado = new HomeFragment();
             } else if (itemId == R.id.nav_search) {
-                fragmentSeleccionado = new TuFragmentoSearch();
+                fragmentSeleccionado = new SearchFragment();
             } else if (itemId == R.id.nav_library) {
-                fragmentSeleccionado = new RegionalFragment();
+                fragmentSeleccionado = new LibraryFragment();
             }
-
 
             if (fragmentSeleccionado != null) {
                 getSupportFragmentManager()
                         .beginTransaction()
-                        .replace(R.id.tu_contenedor_principal, fragmentSeleccionado)
+                        .replace(R.id.main_fullscreen_container, fragmentSeleccionado)
                         .commit();
 
                 // Retornar true es obligatorio para que el ícono cambie de color visualmente
@@ -101,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             return false;
-        });*/
+        });
     }
 
     @Override
@@ -122,7 +101,8 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onPlaybackStateChanged(int playbackState) {
                     if (playbackState == ExoPlayer.STATE_ENDED) {
-                        musicViewModel.playNextSong();
+                        // false porque terminó naturalmente por tiempo
+                        musicViewModel.playNextSong(false);
                     }
                 }
             });
@@ -151,5 +131,4 @@ public class MainActivity extends AppCompatActivity {
             miniPlayerContainer.setVisibility(isVisible ? View.VISIBLE : View.GONE);
         }
     }
-
 }

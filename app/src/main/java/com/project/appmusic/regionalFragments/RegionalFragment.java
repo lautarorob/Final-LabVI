@@ -94,7 +94,7 @@ public class RegionalFragment extends Fragment {
         musicViewModel.getListaRegionalLiveData().observe(getViewLifecycleOwner(), songs -> {
             if (switchLocation.isChecked()) {
                 SongAdapter adapter = new SongAdapter(requireContext(), songs, true, song -> {
-                    musicViewModel.playSong(song);
+                    musicViewModel.playSong(song, songs);
                 });
                 recyclerSongs.setAdapter(adapter);
             }

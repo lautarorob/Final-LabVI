@@ -129,7 +129,7 @@ public class FullPlayerFragment extends Fragment {
         });
 
         btnNext.setOnClickListener(v -> {
-            musicViewModel.playNextSong();
+            musicViewModel.playNextSong(true);
         });
 
         btnPrevious.setOnClickListener(v -> {

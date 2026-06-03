@@ -18,7 +18,12 @@ import retrofit2.Response;
 
 public class MusicViewModel extends ViewModel {
     //canal de datos
+
+    private List<Song> currentPlaybackQueue = new java.util.ArrayList<>();
     private MutableLiveData<List<Song>> listaCancionesLiveData = new MutableLiveData<>();
+
+    private MutableLiveData<List<Song>> searchSongsLiveData = new MutableLiveData<>();
+
     //canal de errores
     private MutableLiveData<String> errorLiveData = new MutableLiveData<>();
 
@@ -46,6 +51,14 @@ public class MusicViewModel extends ViewModel {
         return listaCancionesLiveData;
     }
 
+    public MutableLiveData<List<Song>> getSearchSongsLiveData() {
+        return searchSongsLiveData;
+    }
+
+    public void setListaCancionesLiveData(MutableLiveData<List<Song>> listaCancionesLiveData) {
+        this.listaCancionesLiveData = listaCancionesLiveData;
+    }
+
     private final MutableLiveData<Integer> repeatMode = new MutableLiveData<>(REPEAT_MODE_OFF);
 
     public MutableLiveData<Boolean> getIsShuffle() {
@@ -62,11 +75,11 @@ public class MusicViewModel extends ViewModel {
         return errorLiveData;
     }
 
-    public void downloadSongs(String nombreArtista) {
+    public void downloadSongs(String nombreCancion) {
         //llamado a la instancia de retrofit
         DeezerApiService api = RetrofitClient.getApiService();
         //consulta
-        Call<DeezerListResponse<Song>> call = api.searchSongs(nombreArtista);
+        Call<DeezerListResponse<Song>> call = api.searchSongs(nombreCancion);
         //respuesta
         call.enqueue(new Callback<DeezerListResponse<Song>>() {
             @Override
@@ -75,7 +88,7 @@ public class MusicViewModel extends ViewModel {
                     List<Song> canciones = response.body().getData();
 
                     if (!canciones.isEmpty()) {
-                        listaCancionesLiveData.postValue(canciones);
+                        searchSongsLiveData.postValue(canciones);
                     } else {
                         // Lista vacia
                         errorLiveData.postValue("Sin Resultados.");
@@ -100,6 +113,7 @@ public class MusicViewModel extends ViewModel {
     public MutableLiveData<List<Song>> getListaRegionalLiveData() {
         return listaRegionalLiveData;
     }
+
     public void buscarIdPorPais(String pais) {
         String terminoBusqueda = "Top 50" + pais;
         DeezerApiService api = RetrofitClient.getApiService();
@@ -185,7 +199,11 @@ public class MusicViewModel extends ViewModel {
 
 
     //metodos para reproducir la cancion
-    public void playSong(Song song) {
+    public void playSong(Song song, List<Song> currentList) {
+        // Sobrescribe la cola de reproducción activa con la lista de la pantalla actual
+        this.currentPlaybackQueue = currentList;
+
+        //Continúa tu lógica normal de reproducción
         currentSong.setValue(song);
         isPlaying.setValue(true);
     }
@@ -223,11 +241,11 @@ public class MusicViewModel extends ViewModel {
     }
 
 
-    public void playNextSong() {
-        List<Song> currentPlaylist = listaCancionesLiveData.getValue();
+    // Se agrega el parámetro isManualSkip
+    public void playNextSong(boolean isManualSkip) {
+        List<Song> currentPlaylist = currentPlaybackQueue;
         Song songPlayed = currentSong.getValue();
 
-        // operadores ternarios de seguridad para leer los estados
         int mode = repeatMode.getValue() != null ? repeatMode.getValue() : REPEAT_MODE_OFF;
         boolean shuffleActive = isShuffle.getValue() != null ? isShuffle.getValue() : false;
 
@@ -235,10 +253,16 @@ public class MusicViewModel extends ViewModel {
 
             // PRIORIDAD ALTA: Repetir Uno
             if (mode == REPEAT_MODE_ONE) {
-                if (exoPlayer != null) {
-                    exoPlayer.seekTo(0);
+                if (isManualSkip) {
+                    // El usuario forzo el avance se apaga el repetir 1 y pasa a repetir todo
+                    repeatMode.setValue(REPEAT_MODE_ALL);
+                } else {
+                    // La canción termino naturalmente. Se reinicia y se aborta el salto.
+                    if (exoPlayer != null) {
+                        exoPlayer.seekTo(0);
+                    }
+                    return;
                 }
-                return;
             }
 
             int currentSongIndex = currentPlaylist.indexOf(songPlayed);
@@ -248,25 +272,27 @@ public class MusicViewModel extends ViewModel {
                 java.util.Random random = new java.util.Random();
                 int randomIndex = currentSongIndex;
 
-                // evita repetir la misma cancion consecutivamente
                 while (randomIndex == currentSongIndex) {
-                    // nextInt(max) devuelve un número entre 0  y max
                     randomIndex = random.nextInt(currentPlaylist.size());
                 }
 
-                playSong(currentPlaylist.get(randomIndex));
+                playSong(currentPlaylist.get(randomIndex), currentPlaylist);
                 return;
             }
 
             // PRIORIDAD BAJA: Avance secuencial normal
             if (currentSongIndex != -1 && currentSongIndex < currentPlaylist.size() - 1) {
                 Song nextSong = currentPlaylist.get(currentSongIndex + 1);
-                playSong(nextSong);
+
+                playSong(nextSong, currentPlaylist);
+
             } else {
                 // final de la playlist
                 if (mode == REPEAT_MODE_ALL) {
                     Song firstSong = currentPlaylist.get(0);
-                    playSong(firstSong);
+
+                    playSong(firstSong, currentPlaylist);
+
                 } else {
                     isPlaying.setValue(false);
                 }
@@ -286,7 +312,7 @@ public class MusicViewModel extends ViewModel {
             return;
         }
 
-        List<Song> currentPlaylist = listaCancionesLiveData.getValue();
+        List<Song> currentPlaylist = currentPlaybackQueue;
         Song songPlayed = currentSong.getValue();
         if (songPlayed != null && currentPlaylist != null) {
             int currentSongIndex = currentPlaylist.indexOf(songPlayed);

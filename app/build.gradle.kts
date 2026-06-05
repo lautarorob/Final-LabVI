@@ -57,6 +57,10 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
+    val room_Version = "2.6.1"
+    implementation("androidx.room:room-runtime:$room_Version")
+    annotationProcessor("androidx.room:room-compiler:$room_Version")
+
     implementation("com.google.android.gms:play-services-location:21.2.0")
 
     implementation("androidx.palette:palette:1.0.0")

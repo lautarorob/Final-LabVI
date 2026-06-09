@@ -30,7 +30,7 @@
                 android:id="@+id/textWelcome"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Regional Recommendations"
+                android:text="@string/regional_recommendations"
                 android:textColor="#FFFFFF"
                 android:textSize="32sp"
                 android:textStyle="bold" />
@@ -40,7 +40,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="The most listened to in your area"
+                android:text="@string/the_most_listened_to_in_your_area"
                 android:textColor="#B3B3B3"
                 android:textSize="14sp" />
 
@@ -56,7 +56,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Turn on location"
+                    android:text="@string/turn_on_location"
                     android:textColor="#FFFFFF"
                     android:textSize="16sp" />
 

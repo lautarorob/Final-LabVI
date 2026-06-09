@@ -12,9 +12,12 @@ public class UserEntity {
     private String username;
     private String password;
 
-    public UserEntity(String username, String password) {
+    private String email;
+
+    public UserEntity(String username, String password, String email) {
         this.username = username;
         this.password = password;
+        this.email = email;
     }
 
     public UserEntity() {
@@ -43,5 +46,13 @@ public class UserEntity {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

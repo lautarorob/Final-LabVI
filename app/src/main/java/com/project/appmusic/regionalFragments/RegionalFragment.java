@@ -59,7 +59,11 @@ public class RegionalFragment extends Fragment {
                         if (switchLocation != null) {
                             switchLocation.setChecked(false);
                         }
-                        Toast.makeText(requireContext(), "Ubicacion requerida", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(
+                                requireContext(),
+                                getString(R.string.err_location_required),
+                                Toast.LENGTH_SHORT
+                        ).show();
                     }
                 }
         );
@@ -101,7 +105,7 @@ public class RegionalFragment extends Fragment {
         });
 
         musicViewModel.getErrorLiveData().observe(getViewLifecycleOwner(), errorMsg -> {
-            Toast.makeText(requireContext(), "Estado API: " + errorMsg, Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), R.string.API_state + errorMsg, Toast.LENGTH_LONG).show();
             // Desactiva el switch visualmente si hubo una falla crítica de red
             if (switchLocation != null) switchLocation.setChecked(false);
         });
@@ -115,7 +119,7 @@ public class RegionalFragment extends Fragment {
                 switchLocation.setThumbTintList(azulVivo);
                 switchLocation.setTrackTintList(blanco);
             } else {
-                Toast.makeText(requireContext(), "Ubicacion desactivada", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.location_disabled, Toast.LENGTH_SHORT).show();
                 switchLocation.setThumbTintList(blanco);
                 switchLocation.setTrackTintList(blanco);
                 // desvinculacion del adaptador para vaciar la lista visualmente
@@ -170,7 +174,7 @@ public class RegionalFragment extends Fragment {
                                 String pais = direccionActual.getCountryName();
 
                                 if (pais != null && !pais.isEmpty()) {
-                                    Toast.makeText(requireContext(), "Buscando éxitos en: " + pais, Toast.LENGTH_LONG).show();
+                                    Toast.makeText(requireContext(), R.string.seeking_success_in + " " + pais, Toast.LENGTH_LONG).show();
 
                                     // puente hacia el ViewModel (le mandamos el String)
                                     musicViewModel.buscarIdPorPais(pais);
@@ -178,19 +182,23 @@ public class RegionalFragment extends Fragment {
                                 } else {
                                     // Falla: La base de datos no tiene una provincia para estas coordenadas
                                     if (switchLocation != null) switchLocation.setChecked(false);
-                                    Toast.makeText(requireContext(), "No se pudo determinar la provincia exacta", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(
+                                            requireContext(),
+                                            R.string.the_exact_province_could_not_be_determined,
+                                            Toast.LENGTH_SHORT
+                                    ).show();
                                 }
                             }
                         } catch (java.io.IOException e) {
                             e.printStackTrace();
                             if (switchLocation != null) switchLocation.setChecked(false);
-                            Toast.makeText(requireContext(), "Error de red al traducir la ubicación", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireContext(), R.string.error_translate_location, Toast.LENGTH_SHORT).show();
                         }
 
                     } else {
                         // Falla: El sensor GPS devolvio un valor vacio
                         if (switchLocation != null) switchLocation.setChecked(false);
-                        Toast.makeText(requireContext(), "No se pudo obtener la ubicacion. Active el GPS.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), R.string.location_could_not_be_obtained, Toast.LENGTH_SHORT).show();
 
                         // Abre la pantalla de ajustes de ubicación nativa de Android
                         android.content.Intent intent = new android.content.Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
@@ -200,7 +208,7 @@ public class RegionalFragment extends Fragment {
                 //Atrapa errores internos de Google Play Services
                 .addOnFailureListener(requireActivity(), e -> {
                     if (switchLocation != null) switchLocation.setChecked(false);
-                    Toast.makeText(requireContext(), "Error del sensor: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(requireContext(), R.string.sensor_error + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
 

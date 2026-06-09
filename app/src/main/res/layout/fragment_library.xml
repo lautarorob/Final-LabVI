@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000"
-    tools:context=".libraryFragments.LibraryFragment">
+    tools:context=".toolbarFragments.LibraryFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"

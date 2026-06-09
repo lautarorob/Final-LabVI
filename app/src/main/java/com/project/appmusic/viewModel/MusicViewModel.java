@@ -1,10 +1,14 @@
 package com.project.appmusic.viewModel;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.media3.exoplayer.ExoPlayer;
 
+import android.app.Application;
+
 import com.project.appmusic.Playlist;
+import com.project.appmusic.R;
 import com.project.appmusic.Song;
 import com.project.appmusic.api.DeezerApiService;
 import com.project.appmusic.api.DeezerListResponse;
@@ -17,6 +21,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MusicViewModel extends ViewModel {
+
     //canal de datos
 
     private List<Song> currentPlaybackQueue = new java.util.ArrayList<>();
@@ -25,7 +30,7 @@ public class MusicViewModel extends ViewModel {
     private MutableLiveData<List<Song>> searchSongsLiveData = new MutableLiveData<>();
 
     //canal de errores
-    private MutableLiveData<String> errorLiveData = new MutableLiveData<>();
+    private MutableLiveData<Integer> errorLiveData = new MutableLiveData<>();
 
     //estado de reproduccion
     private MutableLiveData<Song> currentSong = new MutableLiveData<>();
@@ -71,7 +76,7 @@ public class MusicViewModel extends ViewModel {
 
 
     //getter para que la vista escuche los errores
-    public MutableLiveData<String> getErrorLiveData() {
+    public MutableLiveData<Integer> getErrorLiveData() {
         return errorLiveData;
     }
 
@@ -91,18 +96,18 @@ public class MusicViewModel extends ViewModel {
                         searchSongsLiveData.postValue(canciones);
                     } else {
                         // Lista vacia
-                        errorLiveData.postValue("Sin Resultados.");
+                        errorLiveData.setValue(R.string.no_results);
                     }
                 } else {
                     // falla de servidor
-                    errorLiveData.postValue("Error en la respuesta del servidor.");
+                    errorLiveData.postValue(R.string.error_server_response);
                 }
             }
 
             @Override
             public void onFailure(Call<DeezerListResponse<Song>> call, Throwable t) {
                 // falla de red
-                errorLiveData.postValue("Error de red");
+                errorLiveData.postValue(R.string.network_error);
             }
         });
     }
@@ -129,13 +134,13 @@ public class MusicViewModel extends ViewModel {
                     downloadRegional(idEncontrado);
 
                 } else {
-                    errorLiveData.postValue("No se encontró una playlist oficial para " + pais);
+                    errorLiveData.postValue(R.string.no_official_playlist_found);
                 }
             }
 
             @Override
             public void onFailure(Call<DeezerListResponse<Playlist>> call, Throwable t) {
-                errorLiveData.postValue("Error al buscar el ID: " + t.getMessage());
+                errorLiveData.postValue(R.string.error_searching_id);
             }
         });
     }
@@ -154,16 +159,16 @@ public class MusicViewModel extends ViewModel {
                     if (!canciones.isEmpty()) {
                         listaRegionalLiveData.postValue(canciones);
                     } else {
-                        errorLiveData.postValue("La playlist regional está vacía.");
+                        errorLiveData.postValue(R.string.regional_playlist_empty);
                     }
                 } else {
-                    errorLiveData.postValue("Error en la respuesta del servidor.");
+                    errorLiveData.postValue(R.string.error_server_response);
                 }
             }
 
             @Override
             public void onFailure(Call<DeezerListResponse<Song>> call, Throwable t) {
-                errorLiveData.postValue("Error de red: " + t.getMessage());
+                errorLiveData.postValue(R.string.network_error);
             }
         });
     }
@@ -183,16 +188,16 @@ public class MusicViewModel extends ViewModel {
                     if (!canciones.isEmpty()) {
                         listaCancionesLiveData.postValue(canciones);
                     } else {
-                        errorLiveData.postValue("El chart global está vacío.");
+                        errorLiveData.postValue(R.string.no_songs_found);
                     }
                 } else {
-                    errorLiveData.postValue("Error en la respuesta del servidor.");
+                    errorLiveData.postValue(R.string.error_server_response);
                 }
             }
 
             @Override
             public void onFailure(Call<DeezerListResponse<Song>> call, Throwable t) {
-                errorLiveData.postValue("Error de red");
+                errorLiveData.postValue(R.string.network_error);
             }
         });
     }

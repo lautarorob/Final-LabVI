@@ -9,7 +9,6 @@ import androidx.room.RoomDatabase;
 import com.project.appmusic.data.entity.UserEntity;
 import com.project.appmusic.data.dao.UserDao;
 
-// En el array "entities" deberás agregar PlaylistEntity, SongEntity, etc., más adelante.
 @Database(entities = {UserEntity.class}, version = 1, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract UserDao userDao();

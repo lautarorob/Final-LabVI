@@ -2,7 +2,6 @@
     <string name="app_name">Music Park</string>
     <string name="your_likes">Your likes</string>
     <string name="regional">Regional</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="welcome">Welcome</string>
     <string name="ready_for_a_new_experience">Ready for a new experience?</string>
@@ -10,4 +9,48 @@
     <string name="top_global">Top Global</string>
     <string name="song_title">Song Title</string>
     <string name="artist_name">Artist Name</string>
+    <string name="msg_registration_success">Account created successfully</string>
+    <string name="err_pass_no_match">The passwords do not match</string>
+    <string name="err_pass_format">The password must contain at least one letter, one number, and one special character.</string>
+    <string name="err_pass_long">The password must be at least 8 characters long</string>
+    <string name="music_park">Music Park</string>
+    <string name="welcome_to_music_park">Welcome to Music Park</string>
+    <string name="all_your_music_in_one_place">All your music, in one place.</string>
+    <string name="email">Email</string>
+    <string name="your_email_address">your@email.address</string>
+    <string name="password">Password</string>
+    <string name="passwordExample">••••••••</string>
+    <string name="login">Login</string>
+    <string name="don_t_have_an_account">Don\'t have an account?</string>
+    <string name="create_an_account">Create an account</string>
+    <string name="create_your_account">Create your account</string>
+    <string name="name">Name</string>
+    <string name="full_name">Full Name</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="create_account">Create Account</string>
+    <string name="do_you_already_have_an_account">Do you already have an account?</string>
+    <string name="favorite">favorite</string>
+    <string name="play">play</string>
+    <string name="regional_recommendations">Regional Recommendations</string>
+    <string name="the_most_listened_to_in_your_area">The most listened to in your area</string>
+    <string name="turn_on_location">Turn on location</string>
+    <string name="no_results">No result.</string>
+    <string name="error_server_response">Server response error</string>
+    <string name="network_error">Network error</string>
+    <string name="no_official_playlist_found">No official playlist was found for your country</string>
+    <string name="error_searching_id">Error searching for ID</string>
+    <string name="regional_playlist_empty">The regional playlist is empty</string>
+    <string name="no_songs_found">No songs found</string>
+    <string name="err_location_required">Required location</string>
+    <string name="API_state">API State</string>
+    <string name="location_disabled">Location disabled</string>
+    <string name="seeking_success_in">Seeking success in:</string>
+    <string name="the_exact_province_could_not_be_determined">The exact province could not be determined</string>
+    <string name="error_translate_location">Network error translating location</string>
+    <string name="location_could_not_be_obtained">Location could not be obtained. Please enable GPS.</string>
+    <string name="sensor_error">Sensor error:</string>
+    <string name="account_created_successfully">Account created successfully</string>
+    <string name="err_empty_fields">All fields are required</string>
+    <string name="err_email_format">Please enter a valid email address</string>
+
 </resources>

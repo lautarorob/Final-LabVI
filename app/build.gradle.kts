@@ -75,4 +75,6 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     //glide(descargar y mostrar caratulas)
     implementation("com.github.bumptech.glide:glide:4.16.0")
+
+    implementation ("org.mindrot:jbcrypt:0.4")
 }

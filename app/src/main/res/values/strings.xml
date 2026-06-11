@@ -52,5 +52,12 @@
     <string name="account_created_successfully">Account created successfully</string>
     <string name="err_empty_fields">All fields are required</string>
     <string name="err_email_format">Please enter a valid email address</string>
+    <string name="err_user_not_found">User not found</string>
+    <string name="err_wrong_password">Wrong password</string>
+    <string name="remember_me">Remember me</string>
+    <string name="added_to_favorites">Added to favorites</string>
+    <string name="no_favorites">You don\'t have any favorite songs</string>
+    <string name="liked_songs">Liked Songs</string>
+    <string name="removed_from_favorites">Song removed from favorites</string>
 
 </resources>

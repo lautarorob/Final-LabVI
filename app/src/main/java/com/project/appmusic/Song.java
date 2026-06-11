@@ -3,6 +3,10 @@ package com.project.appmusic;
 import com.google.gson.annotations.SerializedName;
 
 public class Song {
+
+    @SerializedName("id")
+    private long id;
+
     @SerializedName("title")
     private String titulo;
 
@@ -15,8 +19,17 @@ public class Song {
     @SerializedName("album")
     private Album album;
 
-    public String getTitulo() { return titulo; }
-    public String getUrlAudio() { return urlAudio; }
+    public long getId() {
+        return id;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public String getUrlAudio() {
+        return urlAudio;
+    }
 
     public String getNameArtist() {
         return artist != null ? artist.name : "Artista desconocido";
@@ -35,4 +48,25 @@ public class Song {
         @SerializedName("cover_medium")
         public String coverUrl;
     }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public void setUrlAudio(String urlAudio) {
+        this.urlAudio = urlAudio;
+    }
+
+    public void setArtist(Artist artist) {
+        this.artist = artist;
+    }
+
+    public void setAlbum(Album album) {
+        this.album = album;
+    }
 }
+

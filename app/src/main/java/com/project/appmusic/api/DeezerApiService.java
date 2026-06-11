@@ -21,4 +21,7 @@ public interface DeezerApiService {
 
     @GET("search/playlist")
     Call<DeezerListResponse<Playlist>> buscarPlaylistRegional(@Query("q") String terminoBusqueda);
+
+    @GET("track/{id}")
+    Call<Song> getTrackById(@Path("id") long trackId);
 }

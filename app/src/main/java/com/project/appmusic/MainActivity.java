@@ -2,6 +2,8 @@ package com.project.appmusic;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -73,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
                 getSupportFragmentManager()
                         .beginTransaction()
                         .replace(R.id.main_fullscreen_container, fragmentSeleccionado)
+                        .addToBackStack(null)
                         .commit();
 
                 // Retornar true es obligatorio para que el ícono cambie de color visualmente

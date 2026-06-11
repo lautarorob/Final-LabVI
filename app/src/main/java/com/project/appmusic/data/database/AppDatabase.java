@@ -6,14 +6,33 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-import com.project.appmusic.data.entity.UserEntity;
-import com.project.appmusic.data.dao.UserDao;
 
-@Database(entities = {UserEntity.class}, version = 1, exportSchema = false)
+import com.project.appmusic.data.dao.UserDao;
+import com.project.appmusic.data.dao.PlaylistDao;
+
+
+import com.project.appmusic.data.entity.UserEntity;
+import com.project.appmusic.data.entity.PlaylistEntity;
+import com.project.appmusic.data.entity.TrackEntity;
+import com.project.appmusic.data.entity.PlaylistTrackCrossRef;
+
+
+@Database(
+        entities = {
+                UserEntity.class,
+                PlaylistEntity.class,
+                TrackEntity.class,
+                PlaylistTrackCrossRef.class
+        },
+        version = 2,
+        exportSchema = false
+)
 public abstract class AppDatabase extends RoomDatabase {
+
     public abstract UserDao userDao();
 
-    // Patrón Singleton para evitar fugas de memoria y múltiples conexiones abiertas
+    public abstract PlaylistDao playlistDao();
+
     private static volatile AppDatabase INSTANCE;
 
     public static AppDatabase getInstance(Context context) {
@@ -22,6 +41,7 @@ public abstract class AppDatabase extends RoomDatabase {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                                     AppDatabase.class, "appmusic_database")
+                            .fallbackToDestructiveMigration()
                             .build();
                 }
             }

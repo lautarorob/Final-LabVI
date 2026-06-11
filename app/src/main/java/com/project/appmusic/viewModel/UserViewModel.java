@@ -1,6 +1,8 @@
 package com.project.appmusic.viewModel;
 
 import android.app.Application;
+import android.content.Context;
+import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -94,4 +96,36 @@ public class UserViewModel extends AndroidViewModel {
         });
 
     }
+
+    public void login(String email, String password, boolean rememberMe) {
+        if (email.isEmpty() || password.isEmpty()) {
+            errorMessage.setValue(getApplication().getString(R.string.err_empty_fields));
+            return;
+        }
+        executorService.execute(() -> {
+            UserEntity userEntity = userDao.findByEmail(email);
+
+            if (userEntity == null) {
+                errorMessage.postValue(getApplication().getString(R.string.err_user_not_found));
+            } else {
+                if (BCrypt.checkpw(password, userEntity.getPassword())) {
+
+                    // Guardar en SharedPreferences
+                    if (rememberMe) {
+                        SharedPreferences prefs = getApplication().getSharedPreferences("AppMusicPrefs", Context.MODE_PRIVATE);
+                        prefs.edit()
+                                .putBoolean("isLogged", true)
+                                .putInt("currentUserId", userEntity.getId())
+                                .apply();
+                    }
+
+
+                    success.postValue(true);
+                } else {
+                    errorMessage.postValue(getApplication().getString(R.string.err_wrong_password));
+                }
+            }
+        });
+    }
+
 }

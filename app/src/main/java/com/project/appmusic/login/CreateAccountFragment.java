@@ -1,6 +1,5 @@
 package com.project.appmusic.login;
 
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -68,6 +67,8 @@ public class CreateAccountFragment extends Fragment {
 
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
 
+        configureObservers();
+
         userViewModel.getErrorMessage().observe(getViewLifecycleOwner(), message -> {
             Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
         });
@@ -79,19 +80,38 @@ public class CreateAccountFragment extends Fragment {
                 requireActivity().getSupportFragmentManager().popBackStack();
             }
         });
+
         btnCreateAccount.setOnClickListener(v -> {
             saveUser();
+        });
+
+
+    }
+
+    private void configureObservers() {
+        //  fallos de validación o de inserción
+        userViewModel.getErrorMessage().observe(getViewLifecycleOwner(), message -> {
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+        });
+
+        //   éxito de la persistencia asíncrona
+        userViewModel.getSuccess().observe(getViewLifecycleOwner(), success -> {
+            if (success) {
+                Toast.makeText(requireContext(), getString(R.string.msg_registration_success), Toast.LENGTH_SHORT).show();
+                // Cierra el fragmento
+                requireActivity().getSupportFragmentManager().popBackStack();
+            }
         });
     }
 
     private void saveUser() {
-        String name = etname.getText().toString();
-        String email = etEmail.getText().toString();
-        String password = etPassword.getText().toString();
+        String name = etname.getText().toString().trim();
+        String email = etEmail.getText().toString().trim();
+        String password = etPassword.getText().toString().trim();
         String confirmPassword = etConfirmPassword.getText().toString();
 
-        UserRegistrationDTO newUser = new UserRegistrationDTO(name, email, password, confirmPassword);
+        UserRegistrationDTO registrationData = new UserRegistrationDTO(name, email, password, confirmPassword);
 
-        userViewModel.saveUser(newUser);
+        userViewModel.saveUser(registrationData);
     }
 }

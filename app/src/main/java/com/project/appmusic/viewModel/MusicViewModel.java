@@ -1,11 +1,13 @@
 package com.project.appmusic.viewModel;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 import androidx.media3.exoplayer.ExoPlayer;
 
 import android.app.Application;
+import android.content.Context;
+import android.content.SharedPreferences;
 
 import com.project.appmusic.Playlist;
 import com.project.appmusic.R;
@@ -13,14 +15,23 @@ import com.project.appmusic.Song;
 import com.project.appmusic.api.DeezerApiService;
 import com.project.appmusic.api.DeezerListResponse;
 import com.project.appmusic.api.RetrofitClient;
+import com.project.appmusic.data.dao.PlaylistDao;
+import com.project.appmusic.data.database.AppDatabase;
+import com.project.appmusic.data.entity.PlaylistEntity;
+import com.project.appmusic.data.entity.PlaylistTrackCrossRef;
+import com.project.appmusic.data.entity.PlaylistWithTracks;
+import com.project.appmusic.data.entity.TrackEntity;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MusicViewModel extends ViewModel {
+public class MusicViewModel extends AndroidViewModel {
 
     //canal de datos
 
@@ -38,6 +49,12 @@ public class MusicViewModel extends ViewModel {
     private MutableLiveData<Boolean> isPlaying = new MutableLiveData<>();
 
     private MutableLiveData<Boolean> isShuffle = new MutableLiveData<>(false);
+
+    private MutableLiveData<List<Song>> favoritesLiveData = new MutableLiveData<>();
+
+    public MutableLiveData<List<Song>> getFavoritesLiveData() {
+        return favoritesLiveData;
+    }
 
     public static final int REPEAT_MODE_OFF = 0;
     public static final int REPEAT_MODE_ALL = 1;
@@ -78,6 +95,15 @@ public class MusicViewModel extends ViewModel {
     //getter para que la vista escuche los errores
     public MutableLiveData<Integer> getErrorLiveData() {
         return errorLiveData;
+    }
+
+    private final PlaylistDao playlistDao;
+
+    public MusicViewModel(@NonNull Application application) {
+        super(application);
+        AppDatabase db = AppDatabase.getInstance(application);
+        this.playlistDao = db.playlistDao();
+        this.executorService = Executors.newSingleThreadExecutor();
     }
 
     public void downloadSongs(String nombreCancion) {
@@ -205,12 +231,46 @@ public class MusicViewModel extends ViewModel {
 
     //metodos para reproducir la cancion
     public void playSong(Song song, List<Song> currentList) {
-        // Sobrescribe la cola de reproducción activa con la lista de la pantalla actual
-        this.currentPlaybackQueue = currentList;
 
-        //Continúa tu lógica normal de reproducción
+        // Si la canción no tiene URL de audio, significa que viene de Room
+        if (song.getUrlAudio() == null || song.getUrlAudio().isEmpty()) {
+
+            DeezerApiService api = RetrofitClient.getApiService();
+            api.getTrackById(song.getId()).enqueue(new Callback<Song>() {
+                @Override
+                public void onResponse(Call<Song> call, Response<Song> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+
+                        // URL fresca de la API
+                        String urlFresh = response.body().getUrlAudio();
+
+                        // actualizacion de objeto en memoria
+                        song.setUrlAudio(urlFresh);
+
+                        // reproducción real
+                        executeInternalPlayback(song, currentList);
+                    } else {
+                        errorLiveData.postValue(R.string.error_server_response);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Song> call, Throwable t) {
+                    errorLiveData.postValue(R.string.network_error);
+                }
+            });
+
+        } else {
+            // Si ya tenía la URL (viene de una búsqueda normal), reproducimos directamente
+            executeInternalPlayback(song, currentList);
+        }
+    }
+
+    private void executeInternalPlayback(Song song, List<Song> currentList) {
+        this.currentPlaybackQueue = currentList;
         currentSong.setValue(song);
         isPlaying.setValue(true);
+        checkIsFavorite(song.getId());
     }
 
     public void togglePlayback() {
@@ -344,5 +404,126 @@ public class MusicViewModel extends ViewModel {
         }
     }
 
+    private final ExecutorService executorService;
+
+    // Canal para notificar a la vista si la canción actual es favorita o no
+    private MutableLiveData<Boolean> isCurrentFavorite = new MutableLiveData<>(false);
+
+    public MutableLiveData<Boolean> getIsCurrentFavorite() {
+        return isCurrentFavorite;
+    }
+
+    public void toggleFavorite(Song currentSong) {
+        SharedPreferences prefs = getApplication().getSharedPreferences("AppMusicPrefs", Context.MODE_PRIVATE);
+        int currentUserId = prefs.getInt("currentUserId", -1);
+
+        if (currentUserId == -1) return;
+
+        executorService.execute(() -> {
+            // se recupera o se crea la playlist "Me Gusta"
+            PlaylistWithTracks favPlaylist = playlistDao.getFavoritesPlaylist(currentUserId);
+            int playlistId;
+
+            if (favPlaylist == null) {
+                PlaylistEntity newPlaylist = new PlaylistEntity();
+                newPlaylist.name = "Me Gusta";
+                newPlaylist.userId = currentUserId;
+                newPlaylist.isFavorites = true;
+                playlistId = (int) playlistDao.insertPlaylist(newPlaylist);
+            } else {
+                playlistId = favPlaylist.playlist.playlistId;
+            }
+
+            // se verifica la relacion entre la cancion actual y la playlist
+            int exist = playlistDao.isTrackInPlaylist(playlistId, currentSong.getId());
+
+            PlaylistTrackCrossRef relacion = new PlaylistTrackCrossRef();
+            relacion.playlistId = playlistId;
+            relacion.deezerId = currentSong.getId();
+
+            // Lógica Toggle (Alternador)
+            if (exist > 0) {
+                // Si ya estaba, se borramos
+                playlistDao.deleteTrackFromPlaylist(relacion);
+                isCurrentFavorite.postValue(false);
+            } else {
+                // Si no estaba, se guarda
+                TrackEntity newTrack = new TrackEntity();
+                newTrack.deezerId = currentSong.getId();
+                newTrack.title = currentSong.getTitulo();
+                newTrack.artistName = currentSong.getNameArtist();
+                newTrack.coverUrl = currentSong.getUrlPortada();
+
+                playlistDao.insertTrack(newTrack);
+                playlistDao.insertTrackIntoPlaylist(relacion);
+                isCurrentFavorite.postValue(true);
+            }
+        });
+    }
+
+    //metodo para cargar canciones favoritas
+    public void loadFavorites() {
+        SharedPreferences prefs = getApplication().getSharedPreferences("AppMusicPrefs", Context.MODE_PRIVATE);
+        int currentUserId = prefs.getInt("currentUserId", -1);
+
+        if (currentUserId == -1) {
+            errorLiveData.postValue(R.string.err_user_not_found);
+            return;
+        }
+
+        executorService.execute(() -> {
+            //buscar la playlist "Me gusta" del usuario (consulta relacional)
+            PlaylistWithTracks favPlaylist = playlistDao.getFavoritesPlaylist(currentUserId);
+
+            List<Song> songsForTheView = new ArrayList<>();
+
+            // mapeo de la lista
+            if (favPlaylist != null && favPlaylist.tracks != null) {
+                // Recorrer la lista de canciones favoritas
+                for (TrackEntity entity : favPlaylist.tracks) {
+
+                    Song songMap = new Song();
+                    songMap.setId(entity.deezerId);
+                    songMap.setTitulo(entity.title);
+
+                    Song.Artist artistMap = new Song.Artist();
+                    artistMap.name = entity.artistName;
+                    songMap.setArtist(artistMap);
+
+                    Song.Album albumMap = new Song.Album();
+                    albumMap.coverUrl = entity.coverUrl;
+                    songMap.setAlbum(albumMap);
+
+                    songsForTheView.add(songMap);
+                }
+            }
+            // notificar a la vista
+            favoritesLiveData.postValue(songsForTheView);
+        });
+    }
+
+
+    public void checkIsFavorite(long songId) {
+        SharedPreferences prefs = getApplication().getSharedPreferences("AppMusicPrefs", Context.MODE_PRIVATE);
+        int currentUserId = prefs.getInt("currentUserId", -1);
+
+        if (currentUserId == -1) return;
+
+        executorService.execute(() -> {
+            // se busca la lista de favoritos del usuario
+            PlaylistWithTracks favPlaylist = playlistDao.getFavoritesPlaylist(currentUserId);
+
+            if (favPlaylist != null) {
+                // se verifica si el ID de la canción está vinculado a esta playlist
+                int existe = playlistDao.isTrackInPlaylist(favPlaylist.playlist.playlistId, songId);
+
+                // Si existe > 0, es true. Si es 0, es false.
+                isCurrentFavorite.postValue(existe > 0);
+            } else {
+                // Si la playlist ni siquiera existe, lógicamente no es favorita
+                isCurrentFavorite.postValue(false);
+            }
+        });
+    }
 
 }

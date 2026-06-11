@@ -19,4 +19,7 @@ public interface UserDao {
 
     @Query("SELECT * FROM users_table")
     List<UserEntity> getAllUsers();
+
+    @Query("SELECT * FROM users_table WHERE email = :email LIMIT 1")
+    UserEntity findByEmail(String email);
 }

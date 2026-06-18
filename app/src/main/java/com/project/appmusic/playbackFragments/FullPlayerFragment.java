@@ -21,6 +21,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.project.appmusic.MainActivity;
 import com.project.appmusic.R;
+import com.project.appmusic.Song;
 import com.project.appmusic.viewModel.MusicViewModel;
 
 
@@ -142,6 +143,21 @@ public class FullPlayerFragment extends Fragment {
 
         btnRepeat.setOnClickListener(v -> {
             musicViewModel.toggleRepeat();
+        });
+
+        musicViewModel.getIsCurrentFavorite().observe(getViewLifecycleOwner(), isFavorite -> {
+            if (isFavorite) {
+                btnFavorite.setImageResource(R.drawable.ic_favorite_filled);
+            } else {
+                btnFavorite.setImageResource(R.drawable.ic_favorite);
+            }
+        });
+
+        btnFavorite.setOnClickListener(v -> {
+            Song currentSong = musicViewModel.getCurrentSong().getValue();
+            if (currentSong != null) {
+                musicViewModel.toggleFavorite(currentSong);
+            }
         });
 
         musicViewModel.getIsShuffle().observe(getViewLifecycleOwner(), isShuffle -> {

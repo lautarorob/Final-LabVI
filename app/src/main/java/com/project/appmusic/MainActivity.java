@@ -2,8 +2,6 @@ package com.project.appmusic;
 
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ImageButton;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,7 +11,6 @@ import androidx.media3.exoplayer.ExoPlayer;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.project.appmusic.homeFragments.HomeFragment;
-import com.project.appmusic.regionalFragments.RegionalFragment;
 import com.project.appmusic.toolbarFragments.LibraryFragment;
 import com.project.appmusic.toolbarFragments.SearchFragment;
 import com.project.appmusic.viewModel.MusicViewModel;

@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_gradient2"
-    tools:context=".likedSongsFragments.LikedSongsFragment">
+    tools:context=".playlistCreation.PlayListFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -24,12 +24,12 @@
             android:layout_height="wrap_content" />
 
         <TextView
-            android:id="@+id/textWelcome"
+            android:id="@+id/txtPlaylistTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="20dp"
-            android:text="@string/liked_songs"
+            tools:text="Nombre de la Playlist"
             android:textColor="#FFFFFF"
             android:textSize="50sp"
             android:textStyle="bold" />
@@ -42,11 +42,10 @@
             android:layout_marginTop="4dp">
 
             <TextView
-                android:id="@+id/SongCount"
+                android:id="@+id/txtSongCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="15 Songs"
-                android:text=""
+                tools:text="0 Songs"
                 android:textColor="#B3FFFFFF"
                 android:textSize="16sp" />
         </LinearLayout>
@@ -54,7 +53,7 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclersongs"
+        android:id="@+id/recyclerPlaylistSongs"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
@@ -63,11 +62,12 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <TextView
-        android:id="@+id/tvEmptyFavorites"
+        android:id="@+id/tvEmptyPlaylist"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:text="@string/no_favorites"
+        android:text="@string/empty_playlist"
+        android:textColor="#FFFFFF"
         android:textSize="18sp"
         android:textStyle="bold"
         android:visibility="gone" />

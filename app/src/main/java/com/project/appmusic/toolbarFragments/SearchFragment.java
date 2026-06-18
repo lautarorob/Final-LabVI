@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
@@ -13,12 +14,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.project.appmusic.MainActivity;
 import com.project.appmusic.R;
+import com.project.appmusic.Song;
+import com.project.appmusic.optionsSong.SongOptionsFragment;
 import com.project.appmusic.reciclerView.SongAdapter;
 import com.project.appmusic.viewModel.MusicViewModel;
 
 public class SearchFragment extends Fragment {
 
     private MusicViewModel musicViewModel;
+
+    private android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private Runnable searchRunnable;
 
 
     public SearchFragment() {
@@ -49,9 +55,38 @@ public class SearchFragment extends Fragment {
         musicViewModel = new ViewModelProvider(requireActivity()).get(MusicViewModel.class);
 
         musicViewModel.getSearchSongsLiveData().observe(getViewLifecycleOwner(), songs -> {
-            SongAdapter adapter = new SongAdapter(requireContext(), songs, true, song -> {
-                musicViewModel.playSong(song, songs);
+
+            SongAdapter adapter = new SongAdapter(requireContext(), songs, false, new SongAdapter.OnSongClickListener() {
+                @Override
+                public void onSongClick(Song song) {
+                    musicViewModel.playSong(song, songs);
+                }
+
+                @Override
+                public void onFavoriteClick(Song song) {
+                    musicViewModel.toggleFavorite(song);
+                }
+
+                @Override
+                public void onOptionsClick(Song song) {
+                    // Qué hacer cuando tocan el botón de opciones
+                    SongOptionsFragment songOptionsFragment = new SongOptionsFragment();
+                    //pasamos la cancion seleccionada
+                    songOptionsFragment.setSong(song);
+                    //mostramos el fragmento
+                    songOptionsFragment.show(getParentFragmentManager(), "songOptions");
+                }
+                @Override
+                public void onRemoveFromPlaylistClick(Song song) {
+                    // No es necesario en este caso
+                }
             });
+
+            java.util.List<Long> currentIds = musicViewModel.getFavoriteIdsLiveData().getValue();
+            if (currentIds != null) {
+                adapter.setFavoriteIds(currentIds);
+            }
+
             recyclerSongs.setAdapter(adapter);
         });
 
@@ -85,10 +120,38 @@ public class SearchFragment extends Fragment {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                // Realiza la búsqueda en tiempo real mientras se escribe
+                // reinicio de cronometro actual si el usuario escribe
+                if (searchRunnable != null) {
+                    handler.removeCallbacks(searchRunnable);
+                }
+
+                // valida que el texto no esté vacío
+                if (newText != null && !newText.trim().isEmpty()) {
+
+                    // actualizacion de tarea
+                    searchRunnable = () -> {
+                        // disparo de peticion a Retrofit
+                        musicViewModel.downloadSongs(newText);
+                    };
+
+                    // inicio de cronometro
+                    handler.postDelayed(searchRunnable, 500);
+
+                } else {
+                    recyclerSongs.setAdapter(null);
+                }
                 return true;
             }
         });
+
+        musicViewModel.getFavoriteIdsLiveData().observe(getViewLifecycleOwner(), favoriteIds -> {
+            if (recyclerSongs.getAdapter() != null) {
+                ((SongAdapter) recyclerSongs.getAdapter()).setFavoriteIds(favoriteIds);
+            }
+        });
+
+
+        musicViewModel.loadFavoriteIds();
 
     }
 }

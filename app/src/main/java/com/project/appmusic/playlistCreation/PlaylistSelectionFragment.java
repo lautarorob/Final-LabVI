@@ -1,4 +1,4 @@
-package com.project.appmusic.toolbarFragments;
+package com.project.appmusic.playlistCreation;
 
 import android.os.Bundle;
 
@@ -12,81 +12,60 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.project.appmusic.R;
+import com.project.appmusic.Song;
 import com.project.appmusic.data.entity.PlaylistEntity;
 import com.project.appmusic.data.entity.PlaylistWithTracks;
-import com.project.appmusic.likedSongsFragments.LikedSongsFragment;
-import com.project.appmusic.playlistCreation.CreatePlaylistFragment;
-import com.project.appmusic.playlistCreation.PlayListFragment;
-import com.project.appmusic.playlistCreation.PlaylistSelectionFragment;
 import com.project.appmusic.reciclerView.PlaylistAdapter;
 import com.project.appmusic.viewModel.MusicViewModel;
 
 
-public class LibraryFragment extends Fragment {
+public class PlaylistSelectionFragment extends BottomSheetDialogFragment {
 
-    public LibraryFragment() {
+
+    public PlaylistSelectionFragment() {
         // Required empty public constructor
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_library, container, false);
+        return inflater.inflate(R.layout.fragment_playlist_selection, container, false);
     }
 
     MusicViewModel musicViewModel;
+    private Song songSelect;
+
+    public void setSong(Song song) {
+        this.songSelect = song;
+    }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         musicViewModel = new ViewModelProvider(requireActivity()).get(MusicViewModel.class);
-        RecyclerView recyclerPlaylists = view.findViewById(R.id.recyclerLibrary);
-        recyclerPlaylists.setLayoutManager(new LinearLayoutManager(requireContext()));
 
+        RecyclerView recyclerPlaylists = view.findViewById(R.id.recyclerPlaylists);
+        recyclerPlaylists.setLayoutManager(new LinearLayoutManager(requireContext()));
         LinearLayout btnCreatePlaylist = view.findViewById(R.id.btnCreateNewPlaylist);
 
-        // Instanciación del adaptador
-        PlaylistAdapter adapter = new PlaylistAdapter(false, new PlaylistAdapter.OnPlaylistClickListener() {
+        PlaylistAdapter adapter = new PlaylistAdapter(true, new PlaylistAdapter.OnPlaylistClickListener() {
             @Override
             public void onPlaylistClick(PlaylistWithTracks playlistSelect) {
-                // Validación de tipo de playlist
-                if (playlistSelect.playlist.isFavorites) {
-
-                    // Instanciación de vista de sistema
-                    LikedSongsFragment likedSongsFragment = new LikedSongsFragment();
-
-                    // Transacción estructural
-                    getParentFragmentManager()
-                            .beginTransaction()
-                            .replace(R.id.main_fullscreen_container, likedSongsFragment)
-                            .addToBackStack(null)
-                            .commit();
-
-                } else {
-
-                    // Instanciación de vista de usuario
-                    PlayListFragment playListFragment = new PlayListFragment();
-
-                    // Inyección de dependencia (ID)
-                    playListFragment.setPlaylistId(playlistSelect.playlist.playlistId);
-
-                    // Transacción estructural
-                    getParentFragmentManager()
-                            .beginTransaction()
-                            .replace(R.id.main_fullscreen_container, playListFragment)
-                            .addToBackStack(null)
-                            .commit();
-                }
+                musicViewModel.addSongToExistingPlaylist(playlistSelect.playlist.playlistId, songSelect);
+                dismiss();
             }
         });
 
@@ -100,19 +79,20 @@ public class LibraryFragment extends Fragment {
             }
         });
 
-
         btnCreatePlaylist.setOnClickListener(v -> {
             CreatePlaylistFragment createPlaylistFragment = new CreatePlaylistFragment();
+
+            createPlaylistFragment.setSong(this.songSelect);
 
             getParentFragmentManager()
                     .beginTransaction()
                     .replace(R.id.main_fullscreen_container, createPlaylistFragment)
                     .addToBackStack(null)
                     .commit();
+            dismiss();
         });
 
+        // Disparar la consulta a Room
         musicViewModel.loadUserPlaylists();
     }
-
-
 }

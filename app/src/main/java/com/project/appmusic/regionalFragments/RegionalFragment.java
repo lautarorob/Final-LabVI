@@ -22,6 +22,8 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 import com.project.appmusic.R;
+import com.project.appmusic.Song;
+import com.project.appmusic.optionsSong.SongOptionsFragment;
 import com.project.appmusic.reciclerView.SongAdapter;
 import com.project.appmusic.viewModel.MusicViewModel;
 
@@ -97,9 +99,37 @@ public class RegionalFragment extends Fragment {
 
         musicViewModel.getListaRegionalLiveData().observe(getViewLifecycleOwner(), songs -> {
             if (switchLocation.isChecked()) {
-                SongAdapter adapter = new SongAdapter(requireContext(), songs, true, song -> {
-                    musicViewModel.playSong(song, songs);
+                SongAdapter adapter = new SongAdapter(requireContext(), songs, true, new SongAdapter.OnSongClickListener() {
+                    @Override
+                    public void onSongClick(Song song) {
+                        // Qué hacer cuando tocan la canción completa
+                        musicViewModel.playSong(song, songs);
+                    }
+
+                    @Override
+                    public void onFavoriteClick(Song song) {
+                        // Qué hacer cuando tocan solo el botón de favorito
+                        musicViewModel.toggleFavorite(song);
+                    }
+
+                    @Override
+                    public void onOptionsClick(Song song) {
+                        // Qué hacer cuando tocan el botón de opciones
+                        SongOptionsFragment songOptionsFragment = new SongOptionsFragment();
+                        //pasamos la cancion seleccionada
+                        songOptionsFragment.setSong(song);
+                        //mostramos el fragmento
+                        songOptionsFragment.show(getParentFragmentManager(), "songOptions");
+                    }
+                    @Override
+                    public void onRemoveFromPlaylistClick(Song song) {
+                        // No es necesario en este caso
+                    }
                 });
+                java.util.List<Long> currentIds = musicViewModel.getFavoriteIdsLiveData().getValue();
+                if (currentIds != null) {
+                    adapter.setFavoriteIds(currentIds);
+                }
                 recyclerSongs.setAdapter(adapter);
             }
         });
@@ -129,6 +159,14 @@ public class RegionalFragment extends Fragment {
             }
         });
 
+        musicViewModel.getFavoriteIdsLiveData().observe(getViewLifecycleOwner(), favoriteIds -> {
+            if (recyclerSongs.getAdapter() != null) {
+                ((SongAdapter) recyclerSongs.getAdapter()).setFavoriteIds(favoriteIds);
+            }
+        });
+
+
+        musicViewModel.loadFavoriteIds();
 
     }
 

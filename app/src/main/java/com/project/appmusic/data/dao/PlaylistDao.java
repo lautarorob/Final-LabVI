@@ -1,5 +1,6 @@
 package com.project.appmusic.data.dao;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -78,6 +79,13 @@ public interface PlaylistDao {
     // Eliminar la entidad playlist de la base de datos
     @Query("DELETE FROM playlists WHERE playlistId = :playlistId")
     void deletePlaylist(int playlistId);
+
+    @Query("SELECT * FROM playlists WHERE name LIKE '%' || :query || '%'")
+    List<PlaylistEntity> searchPlaylists(String query);
+
+
+    @Query("SELECT * FROM playlists WHERE name LIKE '%' || :query || '%'")
+    List<PlaylistWithTracks> searchPlaylistsWithTracks(String query);
 
 
 }

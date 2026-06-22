@@ -24,15 +24,19 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ListItemHolder
     private boolean isTopChart;
     private List<Long> favoriteIds = new ArrayList<>();
 
+    private boolean showFavoriteIcon;
+
     // Constructor 1: Original (Completo)
-    public SongAdapter(Context context, List<Song> songs, boolean isTopChart, OnSongClickListener listener) {
+    public SongAdapter(Context context, List<Song> songs, boolean isTopChart, boolean showFavoriteIcon, OnSongClickListener listener) {
         this.songs = songs != null ? songs : new ArrayList<>();
         this.isTopChart = isTopChart;
+        this.showFavoriteIcon = showFavoriteIcon;
         this.listener = listener;
     }
 
     // Constructor 2: Sobrecarga para inicialización vacía (Usado en PlayListFragment)
-    public SongAdapter(OnSongClickListener listener) {
+    public SongAdapter(boolean showFavoriteIcon,OnSongClickListener listener) {
+        this.showFavoriteIcon = showFavoriteIcon;
         this.listener = listener;
         this.isTopChart = false;
     }
@@ -63,6 +67,19 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ListItemHolder
             holder.txtRanking.setText(String.valueOf(position + 1));
         } else {
             holder.txtRanking.setVisibility(View.GONE);
+        }
+
+        if (this.showFavoriteIcon) {
+            holder.btnFavoriteItem.setVisibility(View.VISIBLE);
+
+            // Lógica de llenado de corazón existente
+            if (favoriteIds != null && favoriteIds.contains(song.getId())) {
+                holder.btnFavoriteItem.setImageResource(R.drawable.ic_favorite_filled);
+            } else {
+                holder.btnFavoriteItem.setImageResource(R.drawable.ic_favorite);
+            }
+        } else {
+            holder.btnFavoriteItem.setVisibility(View.GONE);
         }
 
         // Lógica de UI para Favoritos

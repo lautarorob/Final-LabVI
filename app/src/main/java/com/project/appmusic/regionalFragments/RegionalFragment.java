@@ -99,7 +99,7 @@ public class RegionalFragment extends Fragment {
 
         musicViewModel.getListaRegionalLiveData().observe(getViewLifecycleOwner(), songs -> {
             if (switchLocation.isChecked()) {
-                SongAdapter adapter = new SongAdapter(requireContext(), songs, true, new SongAdapter.OnSongClickListener() {
+                SongAdapter adapter = new SongAdapter(requireContext(), songs, true, true, new SongAdapter.OnSongClickListener() {
                     @Override
                     public void onSongClick(Song song) {
                         // Qué hacer cuando tocan la canción completa
@@ -121,6 +121,7 @@ public class RegionalFragment extends Fragment {
                         //mostramos el fragmento
                         songOptionsFragment.show(getParentFragmentManager(), "songOptions");
                     }
+
                     @Override
                     public void onRemoveFromPlaylistClick(Song song) {
                         // No es necesario en este caso
@@ -139,6 +140,14 @@ public class RegionalFragment extends Fragment {
             // Desactiva el switch visualmente si hubo una falla crítica de red
             if (switchLocation != null) switchLocation.setChecked(false);
         });
+
+        musicViewModel.getToastMessageLiveData().observe(getViewLifecycleOwner(), message -> {
+            if (message != null) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                musicViewModel.getToastMessageLiveData().setValue(null);
+            }
+        });
+
 
         switchLocation.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (!buttonView.isPressed()) {

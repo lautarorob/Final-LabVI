@@ -58,8 +58,16 @@ public class CreatePlaylistFragment extends Fragment {
         btnConfirm.setOnClickListener(v -> {
             String nameExtracted = etPlaylistName.getText().toString().trim();
 
-            if (!nameExtracted.isEmpty() && songSelect != null) {
-                musicViewModel.createNewPlaylistWithSong(nameExtracted, songSelect);
+            if (!nameExtracted.isEmpty()) {
+
+                //  Evaluacion de el contexto de creación
+                if (songSelect != null) {
+                    // Flujo A: El usuario llegó aquí desde las opciones de una canción
+                    musicViewModel.createNewPlaylistWithSong(nameExtracted, songSelect);
+                } else {
+                    // Flujo B: El usuario llegó aquí desde la biblioteca (creación vacía)
+                    musicViewModel.createNewEmptyPlaylist(nameExtracted);
+                }
                 getParentFragmentManager().popBackStack();
             }
         });

@@ -12,6 +12,7 @@ import androidx.media3.exoplayer.ExoPlayer;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.project.appmusic.homeFragments.HomeFragment;
 import com.project.appmusic.toolbarFragments.LibraryFragment;
+import com.project.appmusic.toolbarFragments.ProfileFragment;
 import com.project.appmusic.toolbarFragments.SearchFragment;
 import com.project.appmusic.viewModel.MusicViewModel;
 
@@ -66,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
                 fragmentSeleccionado = new SearchFragment();
             } else if (itemId == R.id.nav_library) {
                 fragmentSeleccionado = new LibraryFragment();
+            }else if (itemId == R.id.nav_profile) {
+                fragmentSeleccionado = new ProfileFragment();
             }
 
             if (fragmentSeleccionado != null) {

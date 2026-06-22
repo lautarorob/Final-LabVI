@@ -75,5 +75,15 @@
     <string name="create_playlist">Create Playlist</string>
     <string name="library">Library</string>
     <string name="empty_playlist">Empty playlist</string>
+    <string name="added_to_playlist">The song was added to your playlist</string>
+    <string name="removed_from_playlist">Song removed from playlist</string>
+    <string name="delete_playlist">Delete Playlist</string>
+    <string name="are_you_sure_you_want_to_delete_this_playlist">Are you sure you want to delete the playlist \'%s\' and all its songs?</string>
+    <string name="delete">Delete</string>
+    <string name="you_cannot_delete_your_favorites_list">You cannot delete your Favorites list</string>
+    <plurals name="song_count">
+        <item quantity="one">%d canción</item>
+        <item quantity="other">%d canciones</item>
+    </plurals>
 
 </resources>

@@ -415,6 +415,13 @@ public class MusicViewModel extends AndroidViewModel {
         return isCurrentFavorite;
     }
 
+    //para toasts
+    public MutableLiveData<Integer> toastMessageLiveData = new MutableLiveData<>();
+
+    public MutableLiveData<Integer> getToastMessageLiveData() {
+        return toastMessageLiveData;
+    }
+
     public void toggleFavorite(Song currentSong) {
         SharedPreferences prefs = getApplication().getSharedPreferences("AppMusicPrefs", Context.MODE_PRIVATE);
         int currentUserId = prefs.getInt("currentUserId", -1);
@@ -445,9 +452,10 @@ public class MusicViewModel extends AndroidViewModel {
 
             // Lógica Toggle (Alternador)
             if (exist > 0) {
-                // Si ya estaba, se borramos
+                // Si ya estaba, la borramos
                 playlistDao.deleteTrackFromPlaylist(relacion);
                 isCurrentFavorite.postValue(false);
+                toastMessageLiveData.postValue(R.string.removed_from_favorites);
 
                 loadFavorites();
                 loadFavoriteIds();
@@ -462,6 +470,8 @@ public class MusicViewModel extends AndroidViewModel {
                 playlistDao.insertTrack(newTrack);
                 playlistDao.insertTrackIntoPlaylist(relacion);
                 isCurrentFavorite.postValue(true);
+                toastMessageLiveData.postValue(R.string.added_to_favorites);
+
                 loadFavorites();
                 loadFavoriteIds();
             }
@@ -638,6 +648,9 @@ public class MusicViewModel extends AndroidViewModel {
             checkIsFavorite(song.getId()); // Actualiza el corazón de la canción actual
             loadFavorites();               // Actualiza la lista interna de "Me gusta"
             loadFavoriteIds();             // Actualiza los corazones
+
+            // notificar a la vista
+            toastMessageLiveData.postValue(R.string.added_to_playlist);
         });
     }
 
@@ -650,7 +663,7 @@ public class MusicViewModel extends AndroidViewModel {
 
         executorService.execute(() -> {
             PlaylistEntity newPlaylist = new PlaylistEntity();
-            newPlaylist.name = playlistName; // Usa el texto que escribió el usuario
+            newPlaylist.name = playlistName;
             newPlaylist.userId = currentUserId;
             newPlaylist.isFavorites = false;
 
@@ -670,6 +683,25 @@ public class MusicViewModel extends AndroidViewModel {
             crossRef.deezerId = song.getId();
 
             playlistDao.insertTrackIntoPlaylist(crossRef);
+        });
+    }
+
+    public void createNewEmptyPlaylist(String playlistName) {
+        SharedPreferences prefs = getApplication().getSharedPreferences("AppMusicPrefs", Context.MODE_PRIVATE);
+        int currentUserId = prefs.getInt("currentUserId", -1);
+
+        if (currentUserId == -1) return;
+
+        executorService.execute(() -> {
+            PlaylistEntity newPlaylist = new PlaylistEntity();
+            newPlaylist.name = playlistName;
+            newPlaylist.userId = currentUserId;
+            newPlaylist.isFavorites = false;
+
+            // Solo insertamos la playlist en la base de datos
+            playlistDao.insertPlaylist(newPlaylist);
+
+            loadUserPlaylists();
         });
     }
 
@@ -768,6 +800,8 @@ public class MusicViewModel extends AndroidViewModel {
 
             // Sincronización de UI: Recarga la playlist para desaparecer la fila visualmente
             loadPlaylist(playlistId);
+
+            toastMessageLiveData.postValue(R.string.removed_from_playlist);
         });
     }
 
@@ -782,6 +816,23 @@ public class MusicViewModel extends AndroidViewModel {
 
             // Sincronización de UI: Recarga la biblioteca para quitar la portada
             loadUserPlaylists();
+        });
+    }
+
+
+    private MutableLiveData<List<PlaylistWithTracks>> searchPlaylistLiveData = new MutableLiveData<>();
+
+    public LiveData<List<PlaylistWithTracks>> getSearchPlaylistLiveData() {
+        return searchPlaylistLiveData;
+    }
+
+    public void searchPlaylist(String name) {
+        executorService.execute(() -> {
+            // Pedimos a Room la playlist CON todas sus canciones para poder leer la portada
+            List<PlaylistWithTracks> playlistsCompletas = playlistDao.searchPlaylistsWithTracks(name);
+
+            // Enviamos al canal
+            searchPlaylistLiveData.postValue(playlistsCompletas);
         });
     }
 

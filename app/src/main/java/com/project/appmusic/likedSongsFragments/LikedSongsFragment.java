@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -70,7 +71,7 @@ public class LikedSongsFragment extends Fragment {
                 }
                 tvSongCount.setVisibility(View.VISIBLE); // Aseguramos que el contador sea visible
 
-                SongAdapter adapter = new SongAdapter(requireContext(), songs, true, new SongAdapter.OnSongClickListener() {
+                SongAdapter adapter = new SongAdapter(requireContext(), songs, false, true, new SongAdapter.OnSongClickListener() {
                     @Override
                     public void onSongClick(Song song) {
                         // Qué hacer cuando tocan la canción completa
@@ -92,6 +93,7 @@ public class LikedSongsFragment extends Fragment {
                         //mostramos el fragmento
                         songOptionsFragment.show(getParentFragmentManager(), "songOptions");
                     }
+
                     @Override
                     public void onRemoveFromPlaylistClick(Song song) {
                         // No es necesario en este caso
@@ -117,6 +119,14 @@ public class LikedSongsFragment extends Fragment {
                 ((SongAdapter) recyclerFavorites.getAdapter()).setFavoriteIds(favoriteIds);
             }
         });
+
+        musicViewModel.getToastMessageLiveData().observe(getViewLifecycleOwner(), message -> {
+            if (message != null) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                musicViewModel.getToastMessageLiveData().setValue(null);
+            }
+        });
+
         androidx.appcompat.widget.SearchView searchView = view.findViewById(R.id.search_view);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override

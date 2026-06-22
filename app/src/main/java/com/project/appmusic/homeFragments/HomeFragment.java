@@ -47,7 +47,7 @@ public class HomeFragment extends Fragment {
         // observador de canciones: pone las canciones en la pantalla
         musicViewModel.getListaCancionesLiveData().observe(getViewLifecycleOwner(), songs -> {
 
-            SongAdapter adapter = new SongAdapter(requireContext(), songs, true, new SongAdapter.OnSongClickListener() {
+            SongAdapter adapter = new SongAdapter(requireContext(), songs, true, true, new SongAdapter.OnSongClickListener() {
                 @Override
                 public void onSongClick(Song song) {
                     // Qué hacer cuando tocan la canción completa
@@ -69,6 +69,7 @@ public class HomeFragment extends Fragment {
                     //mostramos el fragmento
                     songOptionsFragment.show(getParentFragmentManager(), "songOptions");
                 }
+
                 @Override
                 public void onRemoveFromPlaylistClick(Song song) {
                     // No es necesario en este caso
@@ -81,6 +82,13 @@ public class HomeFragment extends Fragment {
             }
 
             recyclerSongs.setAdapter(adapter);
+        });
+
+        musicViewModel.getToastMessageLiveData().observe(getViewLifecycleOwner(), message -> {
+            if (message != null) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                musicViewModel.toastMessageLiveData.setValue(null);
+            }
         });
 
 

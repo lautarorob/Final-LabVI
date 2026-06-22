@@ -13,9 +13,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.project.appmusic.R;
 import com.project.appmusic.Song;
+import com.project.appmusic.optionsSong.SongOptionsFragment;
 import com.project.appmusic.reciclerView.SongAdapter;
 import com.project.appmusic.viewModel.MusicViewModel;
 
@@ -58,7 +60,7 @@ public class PlayListFragment extends Fragment {
 
         recyclerPlaylistSongs.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        SongAdapter songAdapter = new SongAdapter(new SongAdapter.OnSongClickListener() {
+        SongAdapter songAdapter = new SongAdapter(false, new SongAdapter.OnSongClickListener() {
             @Override
             public void onSongClick(Song song) {
                 musicViewModel.playSong(song, null);
@@ -66,10 +68,18 @@ public class PlayListFragment extends Fragment {
 
             @Override
             public void onFavoriteClick(Song song) {
+                //no es necesario en este caso
             }
 
             @Override
             public void onOptionsClick(Song song) {
+                // Qué hacer cuando tocan el botón de opciones
+                SongOptionsFragment songOptionsFragment = new SongOptionsFragment();
+                //pasamos la cancion seleccionada
+                songOptionsFragment.setSong(song);
+                songOptionsFragment.setOriginPlaylistId(playlistId);
+                //mostramos el fragmento
+                songOptionsFragment.show(getParentFragmentManager(), "songOptions");
             }
 
             @Override
@@ -86,14 +96,23 @@ public class PlayListFragment extends Fragment {
             }
         });
 
+        musicViewModel.getToastMessageLiveData().observe(getViewLifecycleOwner(), message -> {
+            if (message != null) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                musicViewModel.getToastMessageLiveData().setValue(null);
+            }
+        });
+
+
         musicViewModel.getSongsPlaylistLiveData().observe(getViewLifecycleOwner(), songs -> {
             if (songs != null) {
                 songAdapter.setSongs(songs);
 
-                int cantidad = songs.size();
-                txtSongCount.setText(cantidad + " " + (cantidad == 1 ? "canción" : "canciones"));
+                int amount = songs.size();
+                String textoContador = getResources().getQuantityString(R.plurals.song_count, amount, amount);
 
-                if (cantidad == 0) {
+                txtSongCount.setText(textoContador);
+                if (amount == 0) {
                     tvEmptyPlaylist.setVisibility(View.VISIBLE);
                     recyclerPlaylistSongs.setVisibility(View.GONE);
                 } else {

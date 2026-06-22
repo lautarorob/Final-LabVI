@@ -50,33 +50,15 @@
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
 
-            <LinearLayout
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/search_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="8dp">
+                android:theme="@style/ThemeOverlay.AppCompat.Dark"
+                app:iconifiedByDefault="false"
+                app:queryBackground="@null"
+                app:queryHint="@string/search_playlist" />
 
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@android:drawable/ic_menu_search"
-                    app:tint="#B3B3B3" />
-
-                <EditText
-                    android:id="@+id/etSearchPlaylist"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:background="@android:color/transparent"
-                    android:hint="@string/search_playlist"
-                    android:inputType="textNoSuggestions"
-                    android:textColor="#FFFFFF"
-                    android:textColorHint="#B3B3B3"
-                    android:textSize="14sp"
-                    tools:ignore="TouchTargetSizeCheck" />
-            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
 

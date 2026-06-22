@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
@@ -56,7 +57,7 @@ public class SearchFragment extends Fragment {
 
         musicViewModel.getSearchSongsLiveData().observe(getViewLifecycleOwner(), songs -> {
 
-            SongAdapter adapter = new SongAdapter(requireContext(), songs, false, new SongAdapter.OnSongClickListener() {
+            SongAdapter adapter = new SongAdapter(requireContext(), songs, false, true, new SongAdapter.OnSongClickListener() {
                 @Override
                 public void onSongClick(Song song) {
                     musicViewModel.playSong(song, songs);
@@ -76,6 +77,7 @@ public class SearchFragment extends Fragment {
                     //mostramos el fragmento
                     songOptionsFragment.show(getParentFragmentManager(), "songOptions");
                 }
+
                 @Override
                 public void onRemoveFromPlaylistClick(Song song) {
                     // No es necesario en este caso
@@ -102,6 +104,13 @@ public class SearchFragment extends Fragment {
         if (searchIcon != null) {
             searchIcon.setColorFilter(android.graphics.Color.BLACK);
         }
+
+        musicViewModel.getToastMessageLiveData().observe(getViewLifecycleOwner(), message -> {
+            if (message != null) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                musicViewModel.getToastMessageLiveData().setValue(null);
+            }
+        });
 
         //configuración de la barra de búsqueda
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {

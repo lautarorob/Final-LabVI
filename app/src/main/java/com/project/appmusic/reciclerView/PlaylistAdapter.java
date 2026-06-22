@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.project.appmusic.Playlist;
 import com.project.appmusic.R;
 import com.project.appmusic.data.entity.PlaylistEntity;
 import com.project.appmusic.data.entity.PlaylistWithTracks;
@@ -24,11 +25,15 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.ViewHo
     private List<PlaylistWithTracks> playlists = new ArrayList<>();
     private OnPlaylistClickListener listener;
 
+    private OnPlaylistLongClickListener longClickListener;
+
     private final boolean showAddIcon;
 
-    public PlaylistAdapter(boolean showAddIcon, OnPlaylistClickListener listener) {
+
+    public PlaylistAdapter(boolean showAddIcon, OnPlaylistClickListener listener, OnPlaylistLongClickListener longClickListener) {
         this.showAddIcon = showAddIcon;
         this.listener = listener;
+        this.longClickListener = longClickListener;
     }
 
     public PlaylistAdapter(Context context, List<PlaylistEntity> playlists, boolean showAddIcon) {
@@ -81,11 +86,40 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.ViewHo
                 listener.onPlaylistClick(item);
             }
         });
+
+        holder.itemView.setOnLongClickListener(v -> {
+            if (longClickListener != null) {
+                longClickListener.onPlaylistLongClick(item);
+                return true;
+            }
+            return false;
+        });
     }
 
     @Override
     public int getItemCount() {
         return playlists.size();
+    }
+
+    public void setSimplePlaylists(List<Playlist> playlistsFiltradas) {
+        this.playlists.clear();
+
+        if (playlistsFiltradas != null) {
+            for (Playlist playlistSimple : playlistsFiltradas) {
+                PlaylistWithTracks playlistCompleta = new PlaylistWithTracks();
+
+                PlaylistEntity entity = new PlaylistEntity();
+                entity.playlistId = (int) playlistSimple.getId();
+                entity.name = playlistSimple.getName();
+
+                playlistCompleta.playlist = entity;
+
+                playlistCompleta.tracks = new ArrayList<>();
+
+                this.playlists.add(playlistCompleta);
+            }
+        }
+        notifyDataSetChanged();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -104,5 +138,9 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.ViewHo
 
     public interface OnPlaylistClickListener {
         void onPlaylistClick(PlaylistWithTracks playlistSeleccionada);
+    }
+
+    public interface OnPlaylistLongClickListener {
+        void onPlaylistLongClick(PlaylistWithTracks playlistSeleccionada);
     }
 }

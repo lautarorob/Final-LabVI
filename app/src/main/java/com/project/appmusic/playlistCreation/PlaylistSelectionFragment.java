@@ -5,7 +5,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,15 +12,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.project.appmusic.R;
-import com.project.appmusic.Song;
-import com.project.appmusic.data.entity.PlaylistEntity;
-import com.project.appmusic.data.entity.PlaylistWithTracks;
+import com.project.appmusic.objetos.Song;
 import com.project.appmusic.reciclerView.PlaylistAdapter;
 import com.project.appmusic.viewModel.MusicViewModel;
 

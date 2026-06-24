@@ -12,14 +12,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
-import com.project.appmusic.Playlist;
 import com.project.appmusic.R;
-import com.project.appmusic.Song;
-import com.project.appmusic.data.entity.PlaylistEntity;
+import com.project.appmusic.objetos.Song;
 import com.project.appmusic.viewModel.MusicViewModel;
 
 

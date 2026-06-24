@@ -9,11 +9,10 @@ import androidx.media3.exoplayer.ExoPlayer;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.widget.EditText;
 
-import com.project.appmusic.Playlist;
+import com.project.appmusic.objetos.Playlist;
 import com.project.appmusic.R;
-import com.project.appmusic.Song;
+import com.project.appmusic.objetos.Song;
 import com.project.appmusic.api.DeezerApiService;
 import com.project.appmusic.api.DeezerListResponse;
 import com.project.appmusic.api.RetrofitClient;
@@ -308,7 +307,6 @@ public class MusicViewModel extends AndroidViewModel {
     }
 
 
-    // Se agrega el parámetro isManualSkip
     public void playNextSong(boolean isManualSkip) {
         List<Song> currentPlaylist = currentPlaybackQueue;
         Song songPlayed = currentSong.getValue();
@@ -318,13 +316,13 @@ public class MusicViewModel extends AndroidViewModel {
 
         if (songPlayed != null && currentPlaylist != null) {
 
-            // PRIORIDAD ALTA: Repetir Uno
+            // PRIORIDAD 1: Repetir Uno
             if (mode == REPEAT_MODE_ONE) {
                 if (isManualSkip) {
-                    // El usuario forzo el avance se apaga el repetir 1 y pasa a repetir todo
+                    // El usuario forzó el avance: se apaga el repetir 1 y pasa a repetir todo
                     repeatMode.setValue(REPEAT_MODE_ALL);
                 } else {
-                    // La canción termino naturalmente. Se reinicia y se aborta el salto.
+                    // La canción terminó naturalmente: se reinicia la pista
                     if (exoPlayer != null) {
                         exoPlayer.seekTo(0);
                     }
@@ -332,9 +330,26 @@ public class MusicViewModel extends AndroidViewModel {
                 }
             }
 
-            int currentSongIndex = currentPlaylist.indexOf(songPlayed);
+            // PRIORIDAD 2: Cola Manual (FIFO)
+            if (!manualQueue.isEmpty()) {
+                // .remove(0) extrae la canción más antigua de la cola y la borra de la lista temporal
+                Song nextQueuedSong = manualQueue.remove(0);
 
-            // PRIORIDAD MEDIA: Modo Aleatorio
+                // Se reproduce manteniendo el contexto de la playlist actual de fondo
+                playSong(nextQueuedSong, currentPlaylist);
+                return;
+            }
+
+            // Búsqueda del índice actual iterando por ID
+            int currentSongIndex = -1;
+            for (int i = 0; i < currentPlaylist.size(); i++) {
+                if (currentPlaylist.get(i).getId() == songPlayed.getId()) {
+                    currentSongIndex = i;
+                    break;
+                }
+            }
+
+            // PRIORIDAD 3: Modo Aleatorio
             if (shuffleActive && currentPlaylist.size() > 1) {
                 java.util.Random random = new java.util.Random();
                 int randomIndex = currentSongIndex;
@@ -347,19 +362,16 @@ public class MusicViewModel extends AndroidViewModel {
                 return;
             }
 
-            // PRIORIDAD BAJA: Avance secuencial normal
+            // PRIORIDAD 4: Avance secuencial normal
             if (currentSongIndex != -1 && currentSongIndex < currentPlaylist.size() - 1) {
                 Song nextSong = currentPlaylist.get(currentSongIndex + 1);
-
                 playSong(nextSong, currentPlaylist);
 
             } else {
-                // final de la playlist
+                // Final de la playlist
                 if (mode == REPEAT_MODE_ALL) {
                     Song firstSong = currentPlaylist.get(0);
-
                     playSong(firstSong, currentPlaylist);
-
                 } else {
                     isPlaying.setValue(false);
                 }
@@ -836,4 +848,15 @@ public class MusicViewModel extends AndroidViewModel {
         });
     }
 
+
+    private List<Song> manualQueue = new java.util.ArrayList<>();
+    // metodo para encolar (FIFO)
+    public void addToQueue(Song song) {
+            // Se añade al final de la cola separada
+            manualQueue.add(song);
+            // Se notifica a la interfaz instantáneamente
+            toastMessageLiveData.setValue(R.string.added_to_queue);
+    }
+
 }
+

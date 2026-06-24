@@ -14,10 +14,13 @@ public class UserEntity {
 
     private String email;
 
-    public UserEntity(String username, String password, String email) {
+    private byte[] profilePicture;
+
+    public UserEntity(String username, String password, String email, byte[] profilePicture) {
         this.username = username;
         this.password = password;
         this.email = email;
+        this.profilePicture = profilePicture;
     }
 
     public UserEntity() {
@@ -54,5 +57,13 @@ public class UserEntity {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public byte[] getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(byte[] profilePicture) {
+        this.profilePicture = profilePicture;
     }
 }

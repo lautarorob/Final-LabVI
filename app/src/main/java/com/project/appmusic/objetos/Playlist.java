@@ -1,4 +1,4 @@
-package com.project.appmusic;
+package com.project.appmusic.objetos;
 
 public class Playlist {
     private long id;

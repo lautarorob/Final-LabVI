@@ -19,7 +19,7 @@ import android.widget.Toast;
 import com.project.appmusic.R;
 import com.project.appmusic.likedSongsFragments.LikedSongsFragment;
 import com.project.appmusic.playlistCreation.CreatePlaylistFragment;
-import com.project.appmusic.playlistCreation.DialogPlaylistDeleteFragment;
+import com.project.appmusic.dialogs.DialogPlaylistDeleteFragment;
 import com.project.appmusic.playlistCreation.PlayListFragment;
 import com.project.appmusic.reciclerView.PlaylistAdapter;
 import com.project.appmusic.viewModel.MusicViewModel;

@@ -9,6 +9,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.project.appmusic.objetos.User;
 import com.project.appmusic.data.dto.UserRegistrationDTO;
 import com.project.appmusic.R;
 import com.project.appmusic.data.entity.UserEntity;
@@ -24,6 +25,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class UserViewModel extends AndroidViewModel {
+
+    private MutableLiveData<User> currentUser = new MutableLiveData<>();
 
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
     private final MutableLiveData<Boolean> success = new MutableLiveData<>();
@@ -46,6 +49,10 @@ public class UserViewModel extends AndroidViewModel {
 
     public LiveData<Boolean> getSuccess() {
         return success;
+    }
+
+    public LiveData<User> getCurrentUser() {
+        return currentUser;
     }
 
     public void saveUser(UserRegistrationDTO newUser) {
@@ -73,7 +80,7 @@ public class UserViewModel extends AndroidViewModel {
             return;
         }
 
-        Pattern passPattern = Pattern.compile("^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[^a-zA-Z0-9]).+$");
+        Pattern passPattern = Pattern.compile("^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[^a-zA-Z0-9])\\S+$");
         Matcher matcher = passPattern.matcher(newUser.getPassword());
         if (!matcher.matches()) {
             errorMessage.setValue(getApplication().getString(R.string.err_pass_format));
@@ -102,6 +109,7 @@ public class UserViewModel extends AndroidViewModel {
             errorMessage.setValue(getApplication().getString(R.string.err_empty_fields));
             return;
         }
+
         executorService.execute(() -> {
             UserEntity userEntity = userDao.findByEmail(email);
 
@@ -110,15 +118,18 @@ public class UserViewModel extends AndroidViewModel {
             } else {
                 if (BCrypt.checkpw(password, userEntity.getPassword())) {
 
-                    // Guardar en SharedPreferences
+                    SharedPreferences prefs = getApplication().getSharedPreferences("AppMusicPrefs", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = prefs.edit();
+
+                    editor.putInt("currentUserId", userEntity.getId());
+
                     if (rememberMe) {
-                        SharedPreferences prefs = getApplication().getSharedPreferences("AppMusicPrefs", Context.MODE_PRIVATE);
-                        prefs.edit()
-                                .putBoolean("isLogged", true)
-                                .putInt("currentUserId", userEntity.getId())
-                                .apply();
+                        editor.putBoolean("isLogged", true);
+                    } else {
+                        editor.putBoolean("isLogged", false);
                     }
 
+                    editor.apply();
 
                     success.postValue(true);
                 } else {
@@ -128,4 +139,126 @@ public class UserViewModel extends AndroidViewModel {
         });
     }
 
+    public void loadCurrentUser() {
+        SharedPreferences prefs = getApplication().getSharedPreferences("AppMusicPrefs", Context.MODE_PRIVATE);
+        int currentUserId = prefs.getInt("currentUserId", -1);
+        if (currentUserId == -1) {
+            return;
+        }
+        executorService.execute(() -> {
+            UserEntity userEntity = userDao.getUserById(currentUserId);
+
+            if (userEntity != null) {
+                User userModel = new User();
+                userModel.setId(userEntity.getId());
+                userModel.setName(userEntity.getUsername());
+                userModel.setEmail(userEntity.getEmail());
+                userModel.setProfilePicture(userEntity.getProfilePicture());
+
+                currentUser.postValue(userModel);
+            }
+        });
+    }
+
+    public void changePassword(String oldPassword, String newPassword) {
+
+        if (newPassword.length() < 8) {
+            errorMessage.setValue(getApplication().getString(R.string.err_pass_long));
+            return;
+        }
+
+        Pattern passPattern = Pattern.compile("^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[^a-zA-Z0-9])\\S+$");
+        Matcher matcher = passPattern.matcher(newPassword);
+        if (!matcher.matches()) {
+            errorMessage.setValue(getApplication().getString(R.string.err_pass_format));
+            return;
+        }
+
+        SharedPreferences prefs = getApplication().getSharedPreferences("AppMusicPrefs", Context.MODE_PRIVATE);
+        int currentUserId = prefs.getInt("currentUserId", -1);
+        if (currentUserId == -1) {
+            errorMessage.setValue(getApplication().getString(R.string.err_user_not_found));
+            return;
+        }
+
+        executorService.execute(() -> {
+            UserEntity userEntity = userDao.getUserById(currentUserId);
+
+            if (userEntity != null) {
+                if (BCrypt.checkpw(oldPassword, userEntity.getPassword())) {
+                    String hashSeguro = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+                    userEntity.setPassword(hashSeguro);
+
+                    userDao.updateUser(userEntity);
+
+                    success.postValue(true);
+                } else {
+                    errorMessage.postValue(getApplication().getString(R.string.err_wrong_password));
+                }
+            }
+        });
+    }
+
+    public void deleteCurrentAccount() {
+        SharedPreferences prefs = getApplication().getSharedPreferences("AppMusicPrefs", Context.MODE_PRIVATE);
+        int currentUserId = prefs.getInt("currentUserId", -1);
+
+        if (currentUserId != -1) {
+            executorService.execute(() -> {
+                userDao.deleteUserById(currentUserId);
+
+                prefs.edit()
+                        .remove("currentUserId")
+                        .remove("isLogged")
+                        .apply();
+
+                isLoggedOut.postValue(true);
+            });
+        }
+    }
+
+    private final MutableLiveData<Boolean> isLoggedOut = new MutableLiveData<>(false);
+
+    public LiveData<Boolean> getIsLoggedOut() {
+        return isLoggedOut;
+    }
+
+    public void logOut() {
+        SharedPreferences prefs = getApplication().getSharedPreferences("AppMusicPrefs", Context.MODE_PRIVATE);
+        prefs.edit()
+                .remove("currentUserId")
+                .remove("isLogged")
+                .apply();
+
+        isLoggedOut.setValue(true);
+    }
+
+    public void changeUserName(String newName) {
+        if (newName == null || newName.trim().isEmpty()) {
+            errorMessage.setValue(getApplication().getString(R.string.err_empty_fields));
+            return;
+        }
+
+        SharedPreferences prefs = getApplication().getSharedPreferences("AppMusicPrefs", Context.MODE_PRIVATE);
+        int currentUserId = prefs.getInt("currentUserId", -1);
+
+        if (currentUserId == -1) {
+            errorMessage.setValue(getApplication().getString(R.string.err_user_not_found));
+            return;
+        }
+
+        executorService.execute(() -> {
+            UserEntity userEntity = userDao.getUserById(currentUserId);
+
+            if (userEntity != null) {
+                userEntity.setUsername(newName.trim());
+
+                userDao.updateUser(userEntity);
+
+                loadCurrentUser();
+
+                success.postValue(true);
+            }
+        });
+    }
 }

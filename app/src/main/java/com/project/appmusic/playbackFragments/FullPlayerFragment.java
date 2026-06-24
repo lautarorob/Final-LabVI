@@ -18,10 +18,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.project.appmusic.MainActivity;
 import com.project.appmusic.R;
-import com.project.appmusic.Song;
+import com.project.appmusic.objetos.Song;
 import com.project.appmusic.viewModel.MusicViewModel;
 
 

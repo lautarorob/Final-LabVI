@@ -1,4 +1,4 @@
-package com.project.appmusic.playlistCreation;
+package com.project.appmusic.dialogs;
 
 
 import android.graphics.Color;

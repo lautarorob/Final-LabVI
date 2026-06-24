@@ -107,7 +107,7 @@ public class CreateAccountFragment extends Fragment {
     private void saveUser() {
         String name = etname.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
-        String password = etPassword.getText().toString().trim();
+        String password = etPassword.getText().toString();
         String confirmPassword = etConfirmPassword.getText().toString();
 
         UserRegistrationDTO registrationData = new UserRegistrationDTO(name, email, password, confirmPassword);

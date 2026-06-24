@@ -22,4 +22,13 @@ public interface UserDao {
 
     @Query("SELECT * FROM users_table WHERE email = :email LIMIT 1")
     UserEntity findByEmail(String email);
+
+    @Query("SELECT * FROM users_table WHERE id = :id")
+    UserEntity getUserById(int id);
+
+    @androidx.room.Update
+    void updateUser(UserEntity user);
+
+    @Query("DELETE FROM users_table WHERE id = :userId")
+    void deleteUserById(int userId);
 }

@@ -12,7 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.project.appmusic.Playlist;
+import com.project.appmusic.objetos.Playlist;
 import com.project.appmusic.R;
 import com.project.appmusic.data.entity.PlaylistEntity;
 import com.project.appmusic.data.entity.PlaylistWithTracks;

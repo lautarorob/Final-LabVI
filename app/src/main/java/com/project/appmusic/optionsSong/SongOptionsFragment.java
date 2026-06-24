@@ -11,7 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.project.appmusic.R;
-import com.project.appmusic.Song;
+import com.project.appmusic.objetos.Song;
 
 import android.widget.TextView;
 
@@ -67,9 +67,11 @@ public class SongOptionsFragment extends BottomSheetDialogFragment {
             dismiss();
         });
 
-        btnAddToQueue.setOnClickListener(v -> {
+        btnAddToQueue.setOnClickListener(v ->{
+            musicViewModel.addToQueue(songSeleccionada);
             dismiss();
         });
+
 
         if (originPlaylistId != -1){
             btnRemoveFromPlaylist.setVisibility(View.VISIBLE);

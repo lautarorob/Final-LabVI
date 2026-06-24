@@ -1,4 +1,4 @@
-package com.project.appmusic;
+package com.project.appmusic.objetos;
 
 import com.google.gson.annotations.SerializedName;
 

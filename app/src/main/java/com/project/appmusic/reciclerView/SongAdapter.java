@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.project.appmusic.R;
-import com.project.appmusic.Song;
+import com.project.appmusic.objetos.Song;
 
 import java.util.ArrayList;
 import java.util.List;

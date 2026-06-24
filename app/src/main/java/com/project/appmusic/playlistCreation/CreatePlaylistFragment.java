@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 
 import com.project.appmusic.R;
-import com.project.appmusic.Song;
+import com.project.appmusic.objetos.Song;
 import com.project.appmusic.viewModel.MusicViewModel;
 
 public class CreatePlaylistFragment extends Fragment {

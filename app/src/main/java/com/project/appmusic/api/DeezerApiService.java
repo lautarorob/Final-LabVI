@@ -1,7 +1,7 @@
 package com.project.appmusic.api;
 
-import com.project.appmusic.Playlist;
-import com.project.appmusic.Song;
+import com.project.appmusic.objetos.Playlist;
+import com.project.appmusic.objetos.Song;
 
 import retrofit2.Call;
 import retrofit2.http.GET;

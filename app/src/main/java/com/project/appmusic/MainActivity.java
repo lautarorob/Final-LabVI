@@ -2,6 +2,7 @@ package com.project.appmusic;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -50,6 +51,20 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     exoPlayer.pause();
                 }
+            }
+        });
+
+        musicViewModel.getErrorLiveData().observe(this, errorResId -> {
+            if (errorResId != null) {
+                Toast.makeText(this, errorResId, Toast.LENGTH_SHORT).show();
+                musicViewModel.getErrorLiveData().setValue(null);
+            }
+        });
+
+        musicViewModel.getToastMessageLiveData().observe(this, mensajeResId -> {
+            if (mensajeResId != null) {
+                Toast.makeText(this, mensajeResId, Toast.LENGTH_SHORT).show();
+                musicViewModel.getToastMessageLiveData().setValue(null);
             }
         });
 

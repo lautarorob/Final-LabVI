@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -55,6 +56,10 @@ public class LikedSongsFragment extends Fragment {
         RecyclerView recyclerFavorites = view.findViewById(R.id.recyclersongs);
         recyclerFavorites.setLayoutManager(new LinearLayoutManager(requireContext()));
         TextView tvSongCount = view.findViewById(R.id.SongCount);
+
+        ImageView btnBack = view.findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> requireActivity().getOnBackPressedDispatcher().onBackPressed());
+
 
         musicViewModel = new ViewModelProvider(requireActivity()).get(MusicViewModel.class);
 

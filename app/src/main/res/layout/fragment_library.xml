@@ -78,25 +78,14 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/scrollFilters">
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
+                <androidx.appcompat.widget.SearchView
+                    android:id="@+id/search_view"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    app:cardBackgroundColor="#2A2A2A"
-                    app:cardCornerRadius="6dp"
-                    app:cardElevation="0dp"
-                    app:strokeWidth="0dp">
-
-                    <androidx.appcompat.widget.SearchView
-                        android:id="@+id/search_view"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:theme="@style/ThemeOverlay.AppCompat.Dark"
-                        app:iconifiedByDefault="false"
-                        app:queryBackground="@null"
-                        app:queryHint="@string/search_playlist" />
-
-                </com.google.android.material.card.MaterialCardView>
+                    android:theme="@style/ThemeOverlay.AppCompat.Dark"
+                    app:iconifiedByDefault="false"
+                    app:queryBackground="@null"
+                    app:queryHint="@string/search_playlist" />
 
             </LinearLayout>
 

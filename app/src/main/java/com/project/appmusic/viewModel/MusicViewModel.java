@@ -447,7 +447,7 @@ public class MusicViewModel extends AndroidViewModel {
 
             if (favPlaylist == null) {
                 PlaylistEntity newPlaylist = new PlaylistEntity();
-                newPlaylist.name = "I like";
+                newPlaylist.name = getApplication().getString(R.string.your_likes);
                 newPlaylist.userId = currentUserId;
                 newPlaylist.isFavorites = true;
                 playlistId = (int) playlistDao.insertPlaylist(newPlaylist);
@@ -750,9 +750,8 @@ public class MusicViewModel extends AndroidViewModel {
                     songsForTheView.add(songMap);
                 }
             }
-
             // Publicación en el canal correspondiente
-            currentPlaylistTracksLiveData.postValue(songsForTheView);
+            songsPlaylistLiveData.postValue(songsForTheView);
         });
     }
 
@@ -850,12 +849,13 @@ public class MusicViewModel extends AndroidViewModel {
 
 
     private List<Song> manualQueue = new java.util.ArrayList<>();
+
     // metodo para encolar (FIFO)
     public void addToQueue(Song song) {
-            // Se añade al final de la cola separada
-            manualQueue.add(song);
-            // Se notifica a la interfaz instantáneamente
-            toastMessageLiveData.setValue(R.string.added_to_queue);
+        // Se añade al final de la cola separada
+        manualQueue.add(song);
+        // Se notifica a la interfaz instantáneamente
+        toastMessageLiveData.setValue(R.string.added_to_queue);
     }
 
 }

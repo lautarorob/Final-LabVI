@@ -15,7 +15,7 @@
     <string name="err_pass_long">The password must be at least 8 characters long</string>
     <string name="music_park">Music Park</string>
     <string name="welcome_to_music_park">Welcome to Music Park</string>
-    <string name="all_your_music_in_one_place">All your music, in one place.</string>
+    <string name="all_your_music_in_one_place">All your music, in one place</string>
     <string name="email">Email</string>
     <string name="your_email_address">your@email.address</string>
     <string name="password">Password</string>
@@ -29,12 +29,12 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="create_account">Create Account</string>
     <string name="do_you_already_have_an_account">Do you already have an account?</string>
-    <string name="favorite">favorite</string>
-    <string name="play">play</string>
+    <string name="favorite">Favorite</string>
+    <string name="play">Play</string>
     <string name="regional_recommendations">Regional Recommendations</string>
     <string name="the_most_listened_to_in_your_area">The most listened to in your area</string>
     <string name="turn_on_location">Turn on location</string>
-    <string name="no_results">No result.</string>
+    <string name="no_results">No result</string>
     <string name="error_server_response">Server response error</string>
     <string name="network_error">Network error</string>
     <string name="no_official_playlist_found">No official playlist was found for your country</string>
@@ -47,7 +47,7 @@
     <string name="seeking_success_in">Seeking success in:</string>
     <string name="the_exact_province_could_not_be_determined">The exact province could not be determined</string>
     <string name="error_translate_location">Network error translating location</string>
-    <string name="location_could_not_be_obtained">Location could not be obtained. Please enable GPS.</string>
+    <string name="location_could_not_be_obtained">Location could not be obtained. Please enable GPS</string>
     <string name="sensor_error">Sensor error:</string>
     <string name="account_created_successfully">Account created successfully</string>
     <string name="err_empty_fields">All fields are required</string>
@@ -98,10 +98,18 @@
     <string name="logged_out">Logged out</string>
     <string name="delete_user">Delete User</string>
     <string name="are_you_sure_you_want_to_delete_your_account">Are you sure you want to delete your account?</string>
-    <string name="name_changed">Name changed</string>
+    <string name="name_changed">Name updated</string>
+    <string name="camera">Use Camera</string>
+    <string name="gallery">Choose from the gallery</string>
+    <string name="select_an_option">Select an option</string>
+    <string name="err_reading_image">Error reading the image</string>
+    <string name="log_out_confirmation">Are you sure you want to log out?</string>
+    <string name="yes_go_out">Yes, log out</string>
     <plurals name="song_count">
-        <item quantity="one">%d canción</item>
-        <item quantity="other">%d canciones</item>
+        <item quantity="one">%d song</item>
+        <item quantity="other">%d songs</item>
     </plurals>
+    <string name="what_do_you_want_to_listen_to">What do you want to listen to?</string>
+    <string name="err_email_exists">This email is already registered</string>
 
 </resources>

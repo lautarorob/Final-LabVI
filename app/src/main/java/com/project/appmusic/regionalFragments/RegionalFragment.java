@@ -4,19 +4,21 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.Switch;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Switch;
-import android.widget.Toast;
 
 import com.project.appmusic.R;
 import com.project.appmusic.objetos.Song;
@@ -24,21 +26,31 @@ import com.project.appmusic.optionsSong.SongOptionsFragment;
 import com.project.appmusic.reciclerView.SongAdapter;
 import com.project.appmusic.viewModel.MusicViewModel;
 
+import java.util.ArrayList;
+import java.util.List;
 
 public class RegionalFragment extends Fragment {
 
-    //lanzador de permisos
+
     private ActivityResultLauncher<String> requestPermissionLauncher;
 
+
     private Switch switchLocation;
-
-    //motor de geolocalizacion (se conecta a la antena y redes)
-    private com.google.android.gms.location.FusedLocationProviderClient fusedLocationClient;
-
-    private MusicViewModel musicViewModel;
-
+    private androidx.appcompat.widget.SearchView searchView;
+    private ImageView btnBack;
     private RecyclerView recyclerSongs;
 
+
+    private SongAdapter songAdapter;
+
+
+    private com.google.android.gms.location.FusedLocationProviderClient fusedLocationClient;
+    private MusicViewModel musicViewModel;
+
+
+    private List<Song> originalRegionalSongs = new ArrayList<>();
+    private android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private Runnable searchRunnable;
 
     public RegionalFragment() {
         // Required empty public constructor
@@ -52,7 +64,7 @@ public class RegionalFragment extends Fragment {
                 new ActivityResultContracts.RequestPermission(),
                 isGranted -> {
                     if (isGranted) {
-                        // el usuario acaba de aceptar se dispara la búsqueda de hardware
+                        // El usuario acaba de aceptar; se dispara la búsqueda de hardware
                         obtenerUbicacionActual();
                     } else {
                         if (switchLocation != null) {
@@ -66,75 +78,100 @@ public class RegionalFragment extends Fragment {
                     }
                 }
         );
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_regional, container, false);
-
     }
 
-
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+
         switchLocation = view.findViewById(R.id.switchLocation);
-        fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(requireActivity());
-        // inicializacion del ViewModel
-        musicViewModel = new androidx.lifecycle.ViewModelProvider(requireActivity()).get(com.project.appmusic.viewModel.MusicViewModel.class);
-
-        ColorStateList azulVivo = ColorStateList.valueOf(android.graphics.Color.parseColor("#1D74FF"));
-        //ColorStateList azulOscuro = ColorStateList.valueOf(android.graphics.Color.parseColor("#0A0E17"));
-        ColorStateList blanco = ColorStateList.valueOf(android.graphics.Color.parseColor("#FFFFFF"));
-
+        btnBack = view.findViewById(R.id.btnBack);
+        searchView = view.findViewById(R.id.search_view);
         recyclerSongs = view.findViewById(R.id.recyclersongs);
         recyclerSongs.setLayoutManager(new LinearLayoutManager(requireContext()));
 
+        // Ocultar buscador por defecto al crear la vista
+        searchView.setVisibility(View.GONE);
+
+        fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(requireActivity());
+        musicViewModel = new androidx.lifecycle.ViewModelProvider(requireActivity()).get(MusicViewModel.class);
+
+        ColorStateList azulVivo = ColorStateList.valueOf(android.graphics.Color.parseColor("#1D74FF"));
+        ColorStateList blanco = ColorStateList.valueOf(android.graphics.Color.parseColor("#FFFFFF"));
+
+
+        btnBack.setOnClickListener(v -> requireActivity().getOnBackPressedDispatcher().onBackPressed());
+
+        // Inicialización del adaptador
+        songAdapter = new SongAdapter(requireContext(), new ArrayList<>(), true, true, new SongAdapter.OnSongClickListener() {
+            @Override
+            public void onSongClick(Song song) {
+                musicViewModel.playSong(song, originalRegionalSongs);
+            }
+
+            @Override
+            public void onFavoriteClick(Song song) {
+                musicViewModel.toggleFavorite(song);
+            }
+
+            @Override
+            public void onOptionsClick(Song song) {
+                SongOptionsFragment songOptionsFragment = new SongOptionsFragment();
+                songOptionsFragment.setSong(song);
+                songOptionsFragment.show(getParentFragmentManager(), "songOptions");
+            }
+
+            @Override
+            public void onRemoveFromPlaylistClick(Song song) {
+                // No es necesario en este caso
+            }
+        });
+        recyclerSongs.setAdapter(songAdapter);
+
+        //  Observador de datos de la API
         musicViewModel.getListaRegionalLiveData().observe(getViewLifecycleOwner(), songs -> {
             if (switchLocation.isChecked()) {
-                SongAdapter adapter = new SongAdapter(requireContext(), songs, true, true, new SongAdapter.OnSongClickListener() {
-                    @Override
-                    public void onSongClick(Song song) {
-                        // Qué hacer cuando tocan la canción completa
-                        musicViewModel.playSong(song, songs);
-                    }
-
-                    @Override
-                    public void onFavoriteClick(Song song) {
-                        // Qué hacer cuando tocan solo el botón de favorito
-                        musicViewModel.toggleFavorite(song);
-                    }
-
-                    @Override
-                    public void onOptionsClick(Song song) {
-                        // Qué hacer cuando tocan el botón de opciones
-                        SongOptionsFragment songOptionsFragment = new SongOptionsFragment();
-                        //pasamos la cancion seleccionada
-                        songOptionsFragment.setSong(song);
-                        //mostramos el fragmento
-                        songOptionsFragment.show(getParentFragmentManager(), "songOptions");
-                    }
-
-                    @Override
-                    public void onRemoveFromPlaylistClick(Song song) {
-                        // No es necesario en este caso
-                    }
-                });
-                java.util.List<Long> currentIds = musicViewModel.getFavoriteIdsLiveData().getValue();
-                if (currentIds != null) {
-                    adapter.setFavoriteIds(currentIds);
+                if (songs != null && !songs.isEmpty()) {
+                    // Se respaldan los datos y se muestra el buscador
+                    originalRegionalSongs = songs;
+                    searchView.setVisibility(View.VISIBLE);
+                    songAdapter.setSongs(songs);
+                } else {
+                    // Si la lista está vacía, se oculta el buscador
+                    searchView.setVisibility(View.GONE);
+                    songAdapter.setSongs(new ArrayList<>());
                 }
-                recyclerSongs.setAdapter(adapter);
             }
         });
 
+        //  Motor de búsqueda local (Debounce)
+        searchView.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false; // Delegamos la búsqueda al cambio en tiempo real
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (searchRunnable != null) {
+                    handler.removeCallbacks(searchRunnable);
+                }
+                searchRunnable = () -> filtrarCancionesEnMemoria(newText);
+                handler.postDelayed(searchRunnable, 300); // 300ms de latencia para no saturar el hilo principal
+                return true;
+            }
+        });
+
+        //  Observadores auxiliares (Errores y Toasts)
         musicViewModel.getErrorLiveData().observe(getViewLifecycleOwner(), errorMsg -> {
-            Toast.makeText(requireContext(), R.string.API_state + errorMsg, Toast.LENGTH_LONG).show();
-            // Desactiva el switch visualmente si hubo una falla crítica de red
+            Toast.makeText(requireContext(), getString(R.string.API_state) + " " + errorMsg, Toast.LENGTH_LONG).show();
             if (switchLocation != null) switchLocation.setChecked(false);
         });
 
@@ -145,7 +182,7 @@ public class RegionalFragment extends Fragment {
             }
         });
 
-
+        //  Lógica del Switch de Localización
         switchLocation.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (!buttonView.isPressed()) {
                 return;
@@ -158,28 +195,51 @@ public class RegionalFragment extends Fragment {
                 Toast.makeText(requireContext(), R.string.location_disabled, Toast.LENGTH_SHORT).show();
                 switchLocation.setThumbTintList(blanco);
                 switchLocation.setTrackTintList(blanco);
-                // desvinculacion del adaptador para vaciar la lista visualmente
-                if (recyclerSongs != null) {
-                    recyclerSongs.setAdapter(null);
+
+                // Reset de estado visual al apagar el switch
+                searchView.setVisibility(View.GONE);
+                searchView.setQuery("", false);
+                originalRegionalSongs.clear();
+                if (songAdapter != null) {
+                    songAdapter.setSongs(new ArrayList<>());
                 }
             }
         });
 
+        //  Observador de Favoritos
         musicViewModel.getFavoriteIdsLiveData().observe(getViewLifecycleOwner(), favoriteIds -> {
-            if (recyclerSongs.getAdapter() != null) {
-                ((SongAdapter) recyclerSongs.getAdapter()).setFavoriteIds(favoriteIds);
+            if (songAdapter != null) {
+                songAdapter.setFavoriteIds(favoriteIds);
             }
         });
 
-
         musicViewModel.loadFavoriteIds();
+    }
 
+
+    private void filtrarCancionesEnMemoria(String query) {
+        if (query.isEmpty()) {
+            songAdapter.setSongs(originalRegionalSongs);
+            return;
+        }
+
+        List<Song> filteredList = new ArrayList<>();
+        String queryLower = query.toLowerCase();
+
+        for (Song song : originalRegionalSongs) {
+            boolean matchesTitle = song.getTitulo() != null && song.getTitulo().toLowerCase().contains(queryLower);
+            boolean matchesArtist = song.getNameArtist() != null && song.getNameArtist().toLowerCase().contains(queryLower);
+
+            if (matchesTitle || matchesArtist) {
+                filteredList.add(song);
+            }
+        }
+        songAdapter.setSongs(filteredList);
     }
 
     private void checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
-            // si el permiso ya esta concedido se dispara la busqueda de hardware directamente
             obtenerUbicacionActual();
         } else {
             requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
@@ -187,25 +247,20 @@ public class RegionalFragment extends Fragment {
     }
 
     private void obtenerUbicacionActual() {
-        // validacion doble
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             return;
         }
 
-        // se genera el token de seguridad
         com.google.android.gms.tasks.CancellationTokenSource cancellationTokenSource = new com.google.android.gms.tasks.CancellationTokenSource();
 
-        // se obtiene la ubicacion actual forzando la antena GPS
         fusedLocationClient.getCurrentLocation(com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY, cancellationTokenSource.getToken())
                 .addOnSuccessListener(requireActivity(), location -> {
                     if (location != null) {
-                        // se instancia el Geocoder con el idioma/región del dispositivo
                         android.location.Geocoder geocoder = new android.location.Geocoder(requireContext(), java.util.Locale.getDefault());
 
                         try {
-                            // se solicita la traduccion de la ubicacion actual a una direccion
-                            java.util.List<android.location.Address> direcciones = geocoder.getFromLocation(
+                            List<android.location.Address> direcciones = geocoder.getFromLocation(
                                     location.getLatitude(),
                                     location.getLongitude(),
                                     1
@@ -213,18 +268,12 @@ public class RegionalFragment extends Fragment {
 
                             if (direcciones != null && !direcciones.isEmpty()) {
                                 android.location.Address direccionActual = direcciones.get(0);
-
-                                // extraccion de la provincia
                                 String pais = direccionActual.getCountryName();
 
                                 if (pais != null && !pais.isEmpty()) {
-                                    Toast.makeText(requireContext(), R.string.seeking_success_in + " " + pais, Toast.LENGTH_LONG).show();
-
-                                    // puente hacia el ViewModel (le mandamos el String)
+                                    Toast.makeText(requireContext(), getString(R.string.seeking_success_in) + " " + pais, Toast.LENGTH_LONG).show();
                                     musicViewModel.buscarIdPorPais(pais);
-
                                 } else {
-                                    // Falla: La base de datos no tiene una provincia para estas coordenadas
                                     if (switchLocation != null) switchLocation.setChecked(false);
                                     Toast.makeText(
                                             requireContext(),
@@ -238,22 +287,17 @@ public class RegionalFragment extends Fragment {
                             if (switchLocation != null) switchLocation.setChecked(false);
                             Toast.makeText(requireContext(), R.string.error_translate_location, Toast.LENGTH_SHORT).show();
                         }
-
                     } else {
-                        // Falla: El sensor GPS devolvio un valor vacio
                         if (switchLocation != null) switchLocation.setChecked(false);
                         Toast.makeText(requireContext(), R.string.location_could_not_be_obtained, Toast.LENGTH_SHORT).show();
 
-                        // Abre la pantalla de ajustes de ubicación nativa de Android
                         android.content.Intent intent = new android.content.Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                         startActivity(intent);
                     }
                 })
-                //Atrapa errores internos de Google Play Services
                 .addOnFailureListener(requireActivity(), e -> {
                     if (switchLocation != null) switchLocation.setChecked(false);
-                    Toast.makeText(requireContext(), R.string.sensor_error + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(requireContext(), getString(R.string.sensor_error) + " " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
-
 }

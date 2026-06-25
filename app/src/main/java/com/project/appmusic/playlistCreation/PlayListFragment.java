@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -57,6 +59,9 @@ public class PlayListFragment extends Fragment {
         TextView tvEmptyPlaylist = view.findViewById(R.id.tvEmptyPlaylist);
         androidx.appcompat.widget.SearchView searchView = view.findViewById(R.id.search_view);
         RecyclerView recyclerPlaylistSongs = view.findViewById(R.id.recyclerPlaylistSongs);
+        ImageView btnBack = view.findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> requireActivity().getOnBackPressedDispatcher().onBackPressed());
+
 
         recyclerPlaylistSongs.setLayoutManager(new LinearLayoutManager(requireContext()));
 

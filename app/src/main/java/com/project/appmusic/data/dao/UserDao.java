@@ -31,4 +31,7 @@ public interface UserDao {
 
     @Query("DELETE FROM users_table WHERE id = :userId")
     void deleteUserById(int userId);
+
+    @androidx.room.Query("SELECT COUNT(*) FROM users_table WHERE email = :email")
+    int checkEmailExists(String email);
 }

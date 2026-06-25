@@ -3,6 +3,7 @@ package com.project.appmusic.viewModel;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -70,7 +71,7 @@ public class UserViewModel extends AndroidViewModel {
 
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(newUser.getEmail()).matches()) {
             String error = getApplication().getString(R.string.err_email_format);
-            String example = " (Ej: email@example.com)";
+            String example = getApplication().getString(R.string.your_email_address);
             errorMessage.setValue(error + example);
             return;
         }
@@ -88,18 +89,26 @@ public class UserViewModel extends AndroidViewModel {
         }
         // --- FIN DE VALIDACIONES ---
 
-        // solo se instancia si los datos son válidos
-        UserEntity newEntity = new UserEntity();
-        newEntity.setUsername(newUser.getName());
-        newEntity.setEmail(newUser.getEmail());
 
-        String hashSeguro = BCrypt.hashpw(newUser.getPassword(), BCrypt.gensalt());
-        newEntity.setPassword(hashSeguro);
-
-        // ejecución asíncrona única
         executorService.execute(() -> {
-            userDao.insertUser(newEntity);
-            success.postValue(true);
+
+            int emailCount = userDao.checkEmailExists(newUser.getEmail());
+
+            if (emailCount > 0) {
+
+                errorMessage.postValue(getApplication().getString(R.string.err_email_exists));
+            } else {
+
+                UserEntity newEntity = new UserEntity();
+                newEntity.setUsername(newUser.getName());
+                newEntity.setEmail(newUser.getEmail());
+
+                String hashSeguro = BCrypt.hashpw(newUser.getPassword(), BCrypt.gensalt());
+                newEntity.setPassword(hashSeguro);
+
+                userDao.insertUser(newEntity);
+                success.postValue(true);
+            }
         });
 
     }
@@ -261,4 +270,80 @@ public class UserViewModel extends AndroidViewModel {
             }
         });
     }
+
+    public void updateProfilePicture(Bitmap bitmap) {
+        if (bitmap == null) return;
+
+        SharedPreferences prefs = getApplication().getSharedPreferences("AppMusicPrefs", Context.MODE_PRIVATE);
+        int currentUserId = prefs.getInt("currentUserId", -1);
+
+        if (currentUserId == -1) {
+            errorMessage.setValue(getApplication().getString(R.string.err_user_not_found));
+            return;
+        }
+
+        executorService.execute(() -> {
+            // Convertir el Bitmap a un ByteArray (evita crasheo de SQLite)
+            byte[] imageBytes = compressBitmapToByteArray(bitmap);
+
+            UserEntity userEntity = userDao.getUserById(currentUserId);
+
+            if (userEntity != null) {
+                userEntity.setProfilePicture(imageBytes);
+                userDao.updateUser(userEntity);
+
+                loadCurrentUser();
+
+                success.postValue(true);
+            }
+        });
+    }
+
+    public void updateProfilePictureFromUri(android.net.Uri uri, Context context) {
+        if (uri == null) return;
+
+        executorService.execute(() -> {
+            try {
+                // Abrimos un flujo de lectura desde el almacenamiento del dispositivo
+                java.io.InputStream imageStream = context.getContentResolver().openInputStream(uri);
+
+                // Decodificamos el archivo y lo transformamos en un mapa de bits
+                android.graphics.Bitmap selectedImage = android.graphics.BitmapFactory.decodeStream(imageStream);
+
+                if (selectedImage != null) {
+                    // Reutilizacion del metodo
+                    updateProfilePicture(selectedImage);
+                }
+            } catch (java.io.FileNotFoundException e) {
+                e.printStackTrace();
+                errorMessage.postValue("Error al leer la imagen de la galería");
+            }
+        });
+    }
+
+    //metodo auxiliar
+    private byte[] compressBitmapToByteArray(android.graphics.Bitmap originalBitmap) {
+        // redimension de la imagen a un máximo de 800x800 píxeles para mantener la proporción
+        int maxSize = 800;
+        int width = originalBitmap.getWidth();
+        int height = originalBitmap.getHeight();
+
+        float bitmapRatio = (float) width / (float) height;
+        if (bitmapRatio > 1) {
+            width = maxSize;
+            height = (int) (width / bitmapRatio);
+        } else {
+            height = maxSize;
+            width = (int) (height * bitmapRatio);
+        }
+
+        android.graphics.Bitmap scaledBitmap = android.graphics.Bitmap.createScaledBitmap(originalBitmap, width, height, true);
+
+        // Comprimir el mapa de bits escalado a un arreglo de bytes en formato JPEG
+        java.io.ByteArrayOutputStream stream = new java.io.ByteArrayOutputStream();
+        scaledBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, stream);
+
+        return stream.toByteArray();
+    }
+
 }

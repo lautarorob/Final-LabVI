@@ -9,6 +9,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:clipToPadding="false"
         android:fillViewport="true"
         android:scrollbars="none"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -18,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingBottom="40dp">
+            android:paddingBottom="120dp">
 
             <include
                 android:id="@+id/layoutTopBarCustom"
@@ -265,6 +266,10 @@
                     app:iconTint="#FF7070"
                     app:strokeColor="#3A2A2A"
                     app:strokeWidth="1dp" />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="140dp" />
 
             </LinearLayout>
         </LinearLayout>

@@ -21,6 +21,7 @@ import com.project.appmusic.R;
 import com.project.appmusic.data.entity.PlaylistWithTracks;
 import com.project.appmusic.dialogs.DialogChangeNameFragment;
 import com.project.appmusic.dialogs.DialogChangePasswordFragment;
+import com.project.appmusic.dialogs.DialogLogoutFragment;
 import com.project.appmusic.dialogs.DialogUserDeleteFragment;
 import com.project.appmusic.likedSongsFragments.LikedSongsFragment;
 import com.project.appmusic.login.LoginActivity;
@@ -33,9 +34,32 @@ public class ProfileFragment extends Fragment {
         // Required empty public constructor
     }
 
+    private androidx.activity.result.ActivityResultLauncher<Void> cameraLauncher;
+    private androidx.activity.result.ActivityResultLauncher<String> galleryLauncher;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+
+        // Configurar el contrato para la Cámara
+        cameraLauncher = registerForActivityResult(
+                new androidx.activity.result.contract.ActivityResultContracts.TakePicturePreview(),
+                bitmap -> {
+                    if (bitmap != null) {
+                        userViewModel.updateProfilePicture(bitmap);
+                    }
+                });
+
+        // Configurar el contrato para la Galería
+        galleryLauncher = registerForActivityResult(
+                new androidx.activity.result.contract.ActivityResultContracts.GetContent(),
+                uri -> {
+                    if (uri != null) {
+                        userViewModel.updateProfilePictureFromUri(uri, requireContext());
+                    }
+                });
     }
 
     @Override
@@ -53,8 +77,6 @@ public class ProfileFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         musicViewModel = new ViewModelProvider(requireActivity()).get(MusicViewModel.class);
-        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
-
         userViewModel.loadCurrentUser();
 
         ImageView ivProfile = view.findViewById(R.id.ivProfile);
@@ -99,13 +121,8 @@ public class ProfileFragment extends Fragment {
         });
 
         btnLogOut.setOnClickListener(v -> {
-            // Detener la música
-            if (musicViewModel != null) {
-                musicViewModel.getIsPlaying().setValue(false);
-            }
-            // Delegar la responsabilidad al ViewModel
-            android.widget.Toast.makeText(requireContext(), R.string.logged_out, android.widget.Toast.LENGTH_SHORT).show();
-            userViewModel.logOut();
+            DialogLogoutFragment dialog = new DialogLogoutFragment();
+            dialog.show(getParentFragmentManager(), "DialogLogout");
         });
 
         //se cargan los favoritos
@@ -167,6 +184,20 @@ public class ProfileFragment extends Fragment {
             dialog.show(getParentFragmentManager(), "DialogChangeName");
         });
 
+        ivProfile.setOnClickListener(v -> {
+            String[] options = {getString(R.string.camera), getString(R.string.gallery)};
+
+            new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.select_an_option)
+                    .setItems(options, (dialog, which) -> {
+                        if (which == 0) {
+                            cameraLauncher.launch(null);
+                        } else if (which == 1) {
+                            galleryLauncher.launch("image/*");
+                        }
+                    })
+                    .show();
+        });
 
     }
 }

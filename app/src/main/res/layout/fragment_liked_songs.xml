@@ -18,10 +18,26 @@
         app:backgroundTint="@android:color/transparent"
         app:elevation="0dp">
 
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginBottom="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="#FFFFFF" />
+
         <androidx.appcompat.widget.SearchView
             android:id="@+id/search_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark"
+            app:iconifiedByDefault="false"
+            app:queryBackground="@null"
+            app:queryHint="@string/what_do_you_want_to_listen_to" />
 
         <TextView
             android:id="@+id/textWelcome"
@@ -29,7 +45,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="20dp"
-            android:text="@string/liked_songs"
+            android:text="@string/your_likes"
             android:textColor="#FFFFFF"
             android:textSize="50sp"
             android:textStyle="bold" />

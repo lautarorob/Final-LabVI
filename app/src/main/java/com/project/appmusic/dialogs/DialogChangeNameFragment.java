@@ -62,12 +62,14 @@ public class DialogChangeNameFragment extends DialogFragment {
         userViewModel.getErrorMessage().observe(getViewLifecycleOwner(), message -> {
             if (message != null) {
                 Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                userViewModel.getErrorMessage().postValue(null);
             }
         });
 
         userViewModel.getSuccess().observe(getViewLifecycleOwner(), success -> {
             if (Boolean.TRUE.equals(success)) {
                 Toast.makeText(requireContext(), R.string.name_changed, Toast.LENGTH_SHORT).show();
+                userViewModel.getSuccess().postValue(null);
                 dismiss();
             }
         });

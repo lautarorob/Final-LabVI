@@ -57,14 +57,14 @@ public class MainActivity extends AppCompatActivity {
         musicViewModel.getErrorLiveData().observe(this, errorResId -> {
             if (errorResId != null) {
                 Toast.makeText(this, errorResId, Toast.LENGTH_SHORT).show();
-                musicViewModel.getErrorLiveData().setValue(null);
+                musicViewModel.getErrorLiveData().postValue(null);
             }
         });
 
         musicViewModel.getToastMessageLiveData().observe(this, mensajeResId -> {
             if (mensajeResId != null) {
                 Toast.makeText(this, mensajeResId, Toast.LENGTH_SHORT).show();
-                musicViewModel.getToastMessageLiveData().setValue(null);
+                musicViewModel.getToastMessageLiveData().postValue(null);
             }
         });
 

@@ -44,12 +44,12 @@ public class UserViewModel extends AndroidViewModel {
         this.executorService = Executors.newSingleThreadExecutor();
     }
 
-    public LiveData<String> getErrorMessage() {
-        return errorMessage;
+    public MutableLiveData<Boolean> getSuccess() {
+        return success;
     }
 
-    public LiveData<Boolean> getSuccess() {
-        return success;
+    public MutableLiveData<String> getErrorMessage() {
+        return errorMessage;
     }
 
     public LiveData<User> getCurrentUser() {

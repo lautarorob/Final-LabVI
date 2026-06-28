@@ -111,5 +111,7 @@
     </plurals>
     <string name="what_do_you_want_to_listen_to">What do you want to listen to?</string>
     <string name="err_email_exists">This email is already registered</string>
+    <string name="playlist_deleted">Playlist Deleted</string>
+    <string name="playlist_created_success">Playlist successfully created</string>
 
 </resources>

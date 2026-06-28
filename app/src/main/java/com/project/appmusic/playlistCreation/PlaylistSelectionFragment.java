@@ -85,13 +85,6 @@ public class PlaylistSelectionFragment extends BottomSheetDialogFragment {
             }
         });
 
-        musicViewModel.getToastMessageLiveData().observe(getViewLifecycleOwner(), message -> {
-            if (message != null) {
-                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
-                musicViewModel.toastMessageLiveData.setValue(null);
-            }
-        });
-
 
         btnCreatePlaylist.setOnClickListener(v -> {
             CreatePlaylistFragment createPlaylistFragment = new CreatePlaylistFragment();

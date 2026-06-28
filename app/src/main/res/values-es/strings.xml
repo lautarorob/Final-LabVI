@@ -112,4 +112,7 @@
         <item quantity="other">%d canciones</item>
     </plurals>
     <string name="err_email_exists">Este email ya está registrado</string>
+    <string name="playlist_deleted">Playlist eliminada</string>
+    <string name="playlist_created_success">Playlist creada correctamente</string>
+
 </resources>

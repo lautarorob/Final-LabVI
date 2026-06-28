@@ -65,6 +65,7 @@ public class DialogPlaylistDeleteFragment extends DialogFragment {
 
         btnConfirm.setOnClickListener(v -> {
             musicViewModel.deleteEntirePlaylist(playlistId);
+            android.widget.Toast.makeText(requireContext(), R.string.playlist_deleted, android.widget.Toast.LENGTH_SHORT).show();
             dismiss();
 
         });

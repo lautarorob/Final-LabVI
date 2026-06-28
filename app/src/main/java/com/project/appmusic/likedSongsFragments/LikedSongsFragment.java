@@ -125,12 +125,13 @@ public class LikedSongsFragment extends Fragment {
             }
         });
 
+        /*
         musicViewModel.getToastMessageLiveData().observe(getViewLifecycleOwner(), message -> {
             if (message != null) {
                 Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
                 musicViewModel.getToastMessageLiveData().setValue(null);
             }
-        });
+        });*/
 
         androidx.appcompat.widget.SearchView searchView = view.findViewById(R.id.search_view);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {

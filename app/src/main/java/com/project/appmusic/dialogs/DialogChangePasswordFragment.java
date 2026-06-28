@@ -61,12 +61,14 @@ public class DialogChangePasswordFragment extends DialogFragment {
         userViewModel.getErrorMessage().observe(getViewLifecycleOwner(), message -> {
             if (message != null) {
                 android.widget.Toast.makeText(requireContext(), message, android.widget.Toast.LENGTH_SHORT).show();
+                userViewModel.getErrorMessage().postValue(null);
             }
         });
 
         userViewModel.getSuccess().observe(getViewLifecycleOwner(), success -> {
             if (Boolean.TRUE.equals(success)) {
                 android.widget.Toast.makeText(requireContext(), R.string.password_updated, android.widget.Toast.LENGTH_SHORT).show();
+                userViewModel.getSuccess().postValue(null);
                 dismiss();
             }
         });

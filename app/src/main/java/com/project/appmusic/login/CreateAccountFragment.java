@@ -58,46 +58,35 @@ public class CreateAccountFragment extends Fragment {
         etConfirmPassword = view.findViewById(R.id.etConfirmPassword);
         btnCreateAccount = view.findViewById(R.id.btnCreateAccount);
 
-
         TextView txtLogin = view.findViewById(R.id.txtGoToLogin);
         txtLogin.setOnClickListener(view1 -> {
             requireActivity().getSupportFragmentManager().popBackStack();
         });
 
-
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
-
+        //llamada a los observadores
         configureObservers();
-
-        userViewModel.getErrorMessage().observe(getViewLifecycleOwner(), message -> {
-            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
-        });
-
-        userViewModel.getSuccess().observe(getViewLifecycleOwner(), success -> {
-            if (success) {
-                Toast.makeText(requireContext(), R.string.account_created_successfully, Toast.LENGTH_SHORT).show();
-                //se destruye el fragmento
-                requireActivity().getSupportFragmentManager().popBackStack();
-            }
-        });
 
         btnCreateAccount.setOnClickListener(v -> {
             saveUser();
         });
-
-
     }
 
     private void configureObservers() {
-        //  fallos de validación o de inserción
+        // Fallos de validación o de inserción
         userViewModel.getErrorMessage().observe(getViewLifecycleOwner(), message -> {
-            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+            if (message != null) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                userViewModel.getErrorMessage().postValue(null);
+            }
         });
 
-        //   éxito de la persistencia asíncrona
+        // Éxito de la persistencia asíncrona
         userViewModel.getSuccess().observe(getViewLifecycleOwner(), success -> {
-            if (success) {
+            if (Boolean.TRUE.equals(success)) {
                 Toast.makeText(requireContext(), getString(R.string.msg_registration_success), Toast.LENGTH_SHORT).show();
+                userViewModel.getSuccess().postValue(null);
+
                 // Cierra el fragmento
                 requireActivity().getSupportFragmentManager().popBackStack();
             }

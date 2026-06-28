@@ -101,13 +101,6 @@ public class PlayListFragment extends Fragment {
             }
         });
 
-        musicViewModel.getToastMessageLiveData().observe(getViewLifecycleOwner(), message -> {
-            if (message != null) {
-                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
-                musicViewModel.getToastMessageLiveData().setValue(null);
-            }
-        });
-
 
         musicViewModel.getSongsPlaylistLiveData().observe(getViewLifecycleOwner(), songs -> {
             if (songs != null) {

@@ -83,20 +83,6 @@ public class HomeFragment extends Fragment {
             recyclerSongs.setAdapter(adapter);
         });
 
-        musicViewModel.getToastMessageLiveData().observe(getViewLifecycleOwner(), message -> {
-            if (message != null) {
-                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
-                musicViewModel.toastMessageLiveData.setValue(null);
-            }
-        });
-
-
-        //suscripcion al canal de errores
-        musicViewModel.getErrorLiveData().observe(getViewLifecycleOwner(), mensajeError -> {
-            //cuando llega el mensaje de error se muestran
-            Toast.makeText(requireContext(), mensajeError, Toast.LENGTH_SHORT).show();
-        });
-
         //disparo de la peticion de red
         // musicViewModel.descargarCanciones("eminem");
         musicViewModel.downloadTopGlobal();

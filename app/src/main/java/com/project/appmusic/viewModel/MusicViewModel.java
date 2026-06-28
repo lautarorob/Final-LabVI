@@ -695,6 +695,8 @@ public class MusicViewModel extends AndroidViewModel {
             crossRef.deezerId = song.getId();
 
             playlistDao.insertTrackIntoPlaylist(crossRef);
+
+            toastMessageLiveData.postValue(R.string.playlist_created_success);
         });
     }
 
@@ -714,6 +716,8 @@ public class MusicViewModel extends AndroidViewModel {
             playlistDao.insertPlaylist(newPlaylist);
 
             loadUserPlaylists();
+
+            toastMessageLiveData.postValue(R.string.playlist_created_success);
         });
     }
 

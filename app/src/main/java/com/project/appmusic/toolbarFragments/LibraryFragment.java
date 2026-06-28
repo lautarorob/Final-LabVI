@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.project.appmusic.R;
+import com.project.appmusic.data.entity.PlaylistWithTracks;
 import com.project.appmusic.likedSongsFragments.LikedSongsFragment;
 import com.project.appmusic.playlistCreation.CreatePlaylistFragment;
 import com.project.appmusic.dialogs.DialogPlaylistDeleteFragment;
@@ -110,10 +111,35 @@ public class LibraryFragment extends Fragment {
         // Vincular el adaptador a la vista
         recyclerPlaylists.setAdapter(adapter);
 
-        //  Observar la base de datos y pintar las filas
+        //  Observar la base de datos y pintar las filas (se fuerza la creacion de la playlist "me gusta")
         musicViewModel.getUserPlaylistsLiveData().observe(getViewLifecycleOwner(), playlists -> {
             if (playlists != null) {
-                adapter.setPlaylists(playlists);
+                // Creamos una copia de la lista para no mutar los datos originales de Room
+                java.util.List<PlaylistWithTracks> listaProcesada = new java.util.ArrayList<>(playlists);
+
+                //  Verificamos si la base de datos ya trajo la lista de favoritos
+                boolean existeFavoritos = false;
+                for (PlaylistWithTracks p : listaProcesada) {
+                    if (p.playlist.isFavorites) {
+                        existeFavoritos = true;
+                        break;
+                    }
+                }
+
+                // Si no existe (usuario nuevo o lista vacía), la inyectamos artificialmente
+                if (!existeFavoritos) {
+                    PlaylistWithTracks favFantasma = new PlaylistWithTracks();
+                    favFantasma.playlist = new com.project.appmusic.data.entity.PlaylistEntity();
+                    favFantasma.playlist.name = getString(R.string.your_likes);
+                    favFantasma.playlist.isFavorites = true;
+                    favFantasma.playlist.playlistId = -1; // Un ID negativo para indicar que es del sistema
+
+                    // La insertamos en la posición 0 para que siempre salga arriba
+                    listaProcesada.add(0, favFantasma);
+                }
+
+                //  lista parcheada al adaptador
+                adapter.setPlaylists(listaProcesada);
             }
         });
 

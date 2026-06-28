@@ -169,19 +169,6 @@ public class RegionalFragment extends Fragment {
             }
         });
 
-        //  Observadores auxiliares (Errores y Toasts)
-        musicViewModel.getErrorLiveData().observe(getViewLifecycleOwner(), errorMsg -> {
-            Toast.makeText(requireContext(), getString(R.string.API_state) + " " + errorMsg, Toast.LENGTH_LONG).show();
-            if (switchLocation != null) switchLocation.setChecked(false);
-        });
-
-        musicViewModel.getToastMessageLiveData().observe(getViewLifecycleOwner(), message -> {
-            if (message != null) {
-                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
-                musicViewModel.getToastMessageLiveData().setValue(null);
-            }
-        });
-
         //  Lógica del Switch de Localización
         switchLocation.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (!buttonView.isPressed()) {

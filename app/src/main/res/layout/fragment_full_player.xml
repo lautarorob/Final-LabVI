@@ -77,8 +77,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/songTitle" />
 
-    <ProgressBar
-        android:id="@+id/progressBar"
+    <SeekBar
+        android:id="@+id/seekBar_progress"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -86,9 +86,32 @@
         android:layout_marginTop="32dp"
         android:layout_marginEnd="32dp"
         android:progressTint="@color/white"
+        android:thumbTint="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/artistName" />
+
+    <TextView
+        android:id="@+id/tvCurrentTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="0:00"
+        android:textColor="#B3B3B3"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="@+id/seekBar_progress"
+        app:layout_constraintTop_toBottomOf="@+id/seekBar_progress" />
+
+    <TextView
+        android:id="@+id/tvTotalTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="0:30"
+        android:textColor="#B3B3B3"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="@+id/seekBar_progress"
+        app:layout_constraintTop_toBottomOf="@+id/seekBar_progress" />
 
     <ImageView
         android:id="@+id/shuffle"
@@ -119,7 +142,7 @@
         android:src="@drawable/ic_pause_circle"
         app:layout_constraintEnd_toStartOf="@+id/skipNext"
         app:layout_constraintStart_toEndOf="@+id/skipPrevious"
-        app:layout_constraintTop_toBottomOf="@+id/progressBar" />
+        app:layout_constraintTop_toBottomOf="@+id/tvCurrentTime" />
 
     <ImageView
         android:id="@+id/skipNext"

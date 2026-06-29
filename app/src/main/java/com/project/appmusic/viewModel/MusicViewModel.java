@@ -862,5 +862,10 @@ public class MusicViewModel extends AndroidViewModel {
         toastMessageLiveData.setValue(R.string.added_to_queue);
     }
 
+    public void seekToPosition(int progress) {
+        if (exoPlayer != null) {
+            exoPlayer.seekTo(progress);
+        }
+    }
 }
 

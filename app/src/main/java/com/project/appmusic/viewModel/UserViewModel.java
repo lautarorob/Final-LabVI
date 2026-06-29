@@ -283,7 +283,7 @@ public class UserViewModel extends AndroidViewModel {
         }
 
         executorService.execute(() -> {
-            // Convertir el Bitmap a un ByteArray (evita crasheo de SQLite)
+            // Convertir el Bitmap a un ByteArray
             byte[] imageBytes = compressBitmapToByteArray(bitmap);
 
             UserEntity userEntity = userDao.getUserById(currentUserId);

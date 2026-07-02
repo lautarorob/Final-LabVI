@@ -60,7 +60,7 @@
                 android:layout_height="48dp"
                 android:background="@drawable/bg_input_dark"
                 android:drawablePadding="12dp"
-                android:hint="@string/full_name"
+                android:hint="@string/user_name"
                 android:inputType="textPersonName"
                 android:paddingHorizontal="16dp"
                 android:textColor="#FFFFFF"

@@ -24,4 +24,7 @@ public interface DeezerApiService {
 
     @GET("track/{id}")
     Call<Song> getTrackById(@Path("id") long trackId);
+
+    @GET("album/{id}")
+    Call<DeezerAlbum> getAlbumById(@Path("id") long id);
 }

@@ -15,4 +15,10 @@
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
     </style>
+
+    <style name="TemaSearchViewPersonalizado" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:textColorHint">#808080</item>
+        <item name="android:editTextColor">#000000</item>
+        <item name="colorControlNormal">#000000</item>
+    </style>
 </resources>

@@ -12,23 +12,41 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.project.appmusic.R;
 import com.project.appmusic.objetos.Song;
 import com.project.appmusic.optionsSong.SongOptionsFragment;
 import com.project.appmusic.reciclerView.SongAdapter;
 import com.project.appmusic.viewModel.MusicViewModel;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PlayListFragment extends Fragment {
 
     private MusicViewModel musicViewModel;
+    private int playlistId;
+
+    // Elementos de la vista
+    private RecyclerView recyclerPlaylistSongs;
+    private TextView txtPlaylistTitle;
+    private TextView txtSongCount;
+    private TextView tvEmptyPlaylist;
+    private androidx.appcompat.widget.SearchView searchView;
+    private HorizontalScrollView scrollFilters;
+    private ChipGroup chipGroupFilters;
+    private SongAdapter songAdapter;
+    private List<Song> originalPlaylistSongs = new ArrayList<>();
+    private String currentSearchQuery = "";
+    private List<String> currentSelectedGenres = new ArrayList<>();
+
     private android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
     private Runnable searchRunnable;
-    private int playlistId;
 
     public PlayListFragment() {
     }
@@ -54,36 +72,37 @@ public class PlayListFragment extends Fragment {
 
         musicViewModel = new ViewModelProvider(requireActivity()).get(MusicViewModel.class);
 
-        TextView txtPlaylistTitle = view.findViewById(R.id.txtPlaylistTitle);
-        TextView txtSongCount = view.findViewById(R.id.txtSongCount);
-        TextView tvEmptyPlaylist = view.findViewById(R.id.tvEmptyPlaylist);
-        androidx.appcompat.widget.SearchView searchView = view.findViewById(R.id.search_view);
-        RecyclerView recyclerPlaylistSongs = view.findViewById(R.id.recyclerPlaylistSongs);
+        // Enlace de vistas
+        txtPlaylistTitle = view.findViewById(R.id.txtPlaylistTitle);
+        txtSongCount = view.findViewById(R.id.txtSongCount);
+        tvEmptyPlaylist = view.findViewById(R.id.tvEmptyPlaylist);
+        searchView = view.findViewById(R.id.search_view);
+        recyclerPlaylistSongs = view.findViewById(R.id.recyclerPlaylistSongs);
+        scrollFilters = view.findViewById(R.id.scrollFilters);
+        chipGroupFilters = view.findViewById(R.id.chipGroupFilters);
+
         ImageView btnBack = view.findViewById(R.id.btnBack);
         btnBack.setOnClickListener(v -> requireActivity().getOnBackPressedDispatcher().onBackPressed());
 
-
         recyclerPlaylistSongs.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        SongAdapter songAdapter = new SongAdapter(false, new SongAdapter.OnSongClickListener() {
+        // Inicialización del Adaptador
+        songAdapter = new SongAdapter(requireContext(), new ArrayList<>(), false, true, new SongAdapter.OnSongClickListener() {
             @Override
             public void onSongClick(Song song) {
-                musicViewModel.playSong(song, null);
+                musicViewModel.playSong(song, originalPlaylistSongs);
             }
 
             @Override
             public void onFavoriteClick(Song song) {
-                //no es necesario en este caso
+                // No aplica en esta vista
             }
 
             @Override
             public void onOptionsClick(Song song) {
-                // Qué hacer cuando tocan el botón de opciones
                 SongOptionsFragment songOptionsFragment = new SongOptionsFragment();
-                //pasamos la cancion seleccionada
                 songOptionsFragment.setSong(song);
                 songOptionsFragment.setOriginPlaylistId(playlistId);
-                //mostramos el fragmento
                 songOptionsFragment.show(getParentFragmentManager(), "songOptions");
             }
 
@@ -95,31 +114,44 @@ public class PlayListFragment extends Fragment {
 
         recyclerPlaylistSongs.setAdapter(songAdapter);
 
+        // Observador del nombre de la playlist
         musicViewModel.getCurrentPlaylistInfoLiveData().observe(getViewLifecycleOwner(), playlistInfo -> {
             if (playlistInfo != null) {
                 txtPlaylistTitle.setText(playlistInfo.name);
             }
         });
 
-
+        // --- OBSERVADOR PRINCIPAL DE LA BASE DE DATOS ---
         musicViewModel.getSongsPlaylistLiveData().observe(getViewLifecycleOwner(), songs -> {
-            if (songs != null) {
-                songAdapter.setSongs(songs);
+            if (songs != null && !songs.isEmpty()) {
+                originalPlaylistSongs = songs; // Guardamos la lista maestra
 
-                int amount = songs.size();
-                String textoContador = getResources().getQuantityString(R.plurals.song_count, amount, amount);
+                // Hacemos visible la UI
+                scrollFilters.setVisibility(View.VISIBLE);
+                tvEmptyPlaylist.setVisibility(View.GONE);
+                recyclerPlaylistSongs.setVisibility(View.VISIBLE);
 
-                txtSongCount.setText(textoContador);
-                if (amount == 0) {
-                    tvEmptyPlaylist.setVisibility(View.VISIBLE);
-                    recyclerPlaylistSongs.setVisibility(View.GONE);
-                } else {
-                    tvEmptyPlaylist.setVisibility(View.GONE);
-                    recyclerPlaylistSongs.setVisibility(View.VISIBLE);
-                }
+                // Disparamos el filtro por si quedó alguna búsqueda o chip activo
+                aplicarFiltros();
+            } else {
+                originalPlaylistSongs.clear();
+
+                // Ocultamos la UI
+                scrollFilters.setVisibility(View.GONE);
+                tvEmptyPlaylist.setVisibility(View.VISIBLE);
+                recyclerPlaylistSongs.setVisibility(View.GONE);
+
+                // Limpiamos filtros
+                chipGroupFilters.clearCheck();
+                currentSearchQuery = "";
+                searchView.setQuery("", false);
+
+                songAdapter.setSongs(new ArrayList<>());
+                txtSongCount.setText(getResources().getQuantityString(R.plurals.song_count, 0, 0));
             }
         });
 
+        // --- LISTENER DEL BUSCADOR ---
         searchView.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -128,22 +160,68 @@ public class PlayListFragment extends Fragment {
 
             @Override
             public boolean onQueryTextChange(String newText) {
+                currentSearchQuery = newText;
                 if (searchRunnable != null) {
                     handler.removeCallbacks(searchRunnable);
                 }
-
-                searchRunnable = () -> {
-                    if (newText.isEmpty()) {
-                        musicViewModel.loadPlaylist(playlistId);
-                    } else {
-                        musicViewModel.searchInSpecificPlaylist(playlistId, newText);
-                    }
-                };
-                handler.postDelayed(searchRunnable, 500);
+                searchRunnable = () -> aplicarFiltros();
+                handler.postDelayed(searchRunnable, 300);
                 return true;
             }
         });
 
+        // --- LISTENER DE LOS CHIPS DE GÉNERO ---
+        chipGroupFilters.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            currentSelectedGenres.clear();
+            for (int id : checkedIds) {
+                Chip chip = view.findViewById(id);
+                if (chip != null) {
+                    currentSelectedGenres.add(chip.getText().toString().toLowerCase());
+                }
+            }
+            aplicarFiltros();
+        });
+
+        // Carga inicial de datos de la playlist
         musicViewModel.loadPlaylist(this.playlistId);
+    }
+
+    // --- MOTOR DE FILTRADO ---
+    private void aplicarFiltros() {
+        List<Song> filteredList = new ArrayList<>();
+        String queryLower = currentSearchQuery.toLowerCase();
+
+        for (Song song : originalPlaylistSongs) {
+
+            //  Filtro de Texto
+            boolean matchesText = queryLower.isEmpty() ||
+                    (song.getTitulo() != null && song.getTitulo().toLowerCase().contains(queryLower)) ||
+                    (song.getNameArtist() != null && song.getNameArtist().toLowerCase().contains(queryLower));
+
+            //  Filtro de Género
+            boolean matchesGenre = currentSelectedGenres.isEmpty();
+            if (!matchesGenre && song.getGender() != null) {
+                String songGenre = song.getGender().toLowerCase();
+                for (String selectedGenre : currentSelectedGenres) {
+                    if (songGenre.contains(selectedGenre)) {
+                        matchesGenre = true;
+                        break;
+                    }
+                }
+            }
+
+            //  Intersección
+            if (matchesText && matchesGenre) {
+                filteredList.add(song);
+            }
+        }
+
+        // Actualizamos el adaptador con la lista filtrada
+        songAdapter.setSongs(filteredList);
+
+        // Actualizamos el contador dinámico de canciones usando los Plurals
+        int amount = filteredList.size();
+        String textoContador = getResources().getQuantityString(R.plurals.song_count, amount, amount);
+        txtSongCount.setText(textoContador);
     }
 }

@@ -10,4 +10,6 @@ public class TrackEntity {
     public String title;
     public String artistName;
     public String coverUrl;
+
+    public String gender;
 }

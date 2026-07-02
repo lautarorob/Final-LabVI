@@ -114,5 +114,11 @@
     <string name="err_email_exists">Este email ya está registrado</string>
     <string name="playlist_deleted">Playlist eliminada</string>
     <string name="playlist_created_success">Playlist creada correctamente</string>
+    <string name="rock">Rock</string>
+    <string name="pop">Pop</string>
+    <string name="trap">Trap</string>
+    <string name="latin">Latino</string>
+    <string name="romantic">Romantico</string>
+    <string name="unknown_genre">Genero desconocido</string>
 
 </resources>

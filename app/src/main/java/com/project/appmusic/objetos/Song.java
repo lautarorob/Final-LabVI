@@ -19,24 +19,58 @@ public class Song {
     @SerializedName("album")
     private Album album;
 
+    private String gender;
+
     public long getId() {
         return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getTitulo() {
         return titulo;
     }
 
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
     public String getUrlAudio() {
         return urlAudio;
+    }
+
+    public void setUrlAudio(String urlAudio) {
+        this.urlAudio = urlAudio;
     }
 
     public String getNameArtist() {
         return artist != null ? artist.name : "Artista desconocido";
     }
 
+    public void setArtist(Artist artist) {
+        this.artist = artist;
+    }
+
     public String getUrlPortada() {
         return album != null ? album.coverUrl : null;
+    }
+
+    public void setAlbum(Album album) {
+        this.album = album;
+    }
+
+    public Album getAlbumData() {
+        return album;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 
     public static class Artist {
@@ -45,28 +79,10 @@ public class Song {
     }
 
     public static class Album {
+        @SerializedName("id")
+        public long id;
+
         @SerializedName("cover_medium")
         public String coverUrl;
     }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
-    }
-
-    public void setUrlAudio(String urlAudio) {
-        this.urlAudio = urlAudio;
-    }
-
-    public void setArtist(Artist artist) {
-        this.artist = artist;
-    }
-
-    public void setAlbum(Album album) {
-        this.album = album;
-    }
 }
-

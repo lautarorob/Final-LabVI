@@ -2,6 +2,8 @@ package com.project.appmusic.objetos;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 public class Song {
 
     @SerializedName("id")
@@ -19,7 +21,7 @@ public class Song {
     @SerializedName("album")
     private Album album;
 
-    private String gender;
+    private List<String> genres;
 
     public long getId() {
         return id;
@@ -65,12 +67,12 @@ public class Song {
         return album;
     }
 
-    public String getGender() {
-        return gender;
+    public List<String> getGenres() {
+        return genres;
     }
 
-    public void setGender(String gender) {
-        this.gender = gender;
+    public void setGenres(List<String> genres) {
+        this.genres = genres;
     }
 
     public static class Artist {

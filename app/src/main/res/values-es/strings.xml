@@ -120,5 +120,8 @@
     <string name="latin">Latino</string>
     <string name="romantic">Romantico</string>
     <string name="unknown_genre">Genero desconocido</string>
+    <string name="folklore">Folklore</string>
+    <string name="cumbia">Cumbia</string>
+    <string name="cuarteto">Cuarteto</string>
 
 </resources>

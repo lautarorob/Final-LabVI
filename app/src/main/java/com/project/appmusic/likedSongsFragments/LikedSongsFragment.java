@@ -174,7 +174,6 @@ public class LikedSongsFragment extends Fragment {
         musicViewModel.loadFavoriteIds();
     }
 
-    // --- MOTOR DE FILTRADO ---
     private void aplicarFiltros() {
         List<Song> filteredList = new ArrayList<>();
         String queryLower = currentSearchQuery.toLowerCase();
@@ -186,19 +185,27 @@ public class LikedSongsFragment extends Fragment {
                     (song.getTitulo() != null && song.getTitulo().toLowerCase().contains(queryLower)) ||
                     (song.getNameArtist() != null && song.getNameArtist().toLowerCase().contains(queryLower));
 
-            //  Filtro de Género
+            // Filtro de Género (Array de Chips vs Array de Géneros)
             boolean matchesGenre = currentSelectedGenres.isEmpty();
-            if (!matchesGenre && song.getGender() != null) {
-                String songGenre = song.getGender().toLowerCase();
-                for (String selectedGenre : currentSelectedGenres) {
-                    if (songGenre.contains(selectedGenre)) {
-                        matchesGenre = true;
-                        break;
+
+            // Validamos usando el nuevo getter en plural
+            if (!matchesGenre && song.getGenres() != null && !song.getGenres().isEmpty()) {
+                // Iteramos la lista de géneros de la canción
+                for (String songGenre : song.getGenres()) {
+                    String songGenreLower = songGenre.toLowerCase();
+
+                    // Comparamos contra la lista de chips seleccionados
+                    for (String selectedGenre : currentSelectedGenres) {
+                        if (songGenreLower.contains(selectedGenre)) {
+                            matchesGenre = true;
+                            break; // Rompe el for de chips (ya encontramos coincidencia)
+                        }
                     }
+                    if (matchesGenre) break; // Rompe el for de géneros (ya sabemos que esta canción sirve)
                 }
             }
 
-            //  Intersección
+            // Intersección (AND)
             if (matchesText && matchesGenre) {
                 filteredList.add(song);
             }

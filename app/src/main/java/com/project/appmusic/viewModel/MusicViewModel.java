@@ -173,9 +173,17 @@ public class MusicViewModel extends AndroidViewModel {
         });
     }
 
-    public void downloadRegional(long playlistId) {
-        DeezerApiService api = RetrofitClient.getApiService();
 
+    private MutableLiveData<Boolean> isLoadingRegional = new MutableLiveData<>(false);
+
+    public MutableLiveData<Boolean> getIsLoadingRegional() {
+        return isLoadingRegional;
+    }
+    public void downloadRegional(long playlistId) {
+        // ENCENDEMOS LA BARRA
+        isLoadingRegional.postValue(true);
+
+        DeezerApiService api = RetrofitClient.getApiService();
         Call<DeezerListResponse<Song>> call = api.getTopRegionalTracks(playlistId);
 
         call.enqueue(new Callback<DeezerListResponse<Song>>() {
@@ -185,19 +193,51 @@ public class MusicViewModel extends AndroidViewModel {
                     List<Song> canciones = response.body().getData();
 
                     if (!canciones.isEmpty()) {
-                        // Envío directo de la lista a la RAM
-                        listaRegionalLiveData.postValue(canciones);
+                        executorService.execute(() -> {
+                            for (Song song : canciones) {
+                                List<String> generosReales = new ArrayList<>();
+                                try {
+                                    if (song.getAlbumData() != null && song.getAlbumData().id > 0) {
+                                        retrofit2.Response<DeezerAlbum> albumResponse = api.getAlbumById(song.getAlbumData().id).execute();
+                                        if (albumResponse.isSuccessful() && albumResponse.body() != null) {
+                                            DeezerAlbum albumCompleto = albumResponse.body();
+                                            if (albumCompleto.genres != null && albumCompleto.genres.data != null) {
+                                                for (DeezerAlbum.GenreData genreObj : albumCompleto.genres.data) {
+                                                    if (genreObj.name != null && !genreObj.name.isEmpty()) {
+                                                        generosReales.add(genreObj.name);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                if (generosReales.isEmpty()) {
+                                    generosReales.add(getApplication().getString(R.string.unknown_genre));
+                                }
+                                song.setGenres(generosReales);
+                            }
+
+                            listaRegionalLiveData.postValue(canciones);
+
+                            //  APAGAMOS LA BARRA (ÉXITO)
+                            isLoadingRegional.postValue(false);
+                        });
                     } else {
                         errorLiveData.postValue(R.string.regional_playlist_empty);
+                        isLoadingRegional.postValue(false); //  APAGAMOS (LISTA VACÍA)
                     }
                 } else {
                     errorLiveData.postValue(R.string.error_server_response);
+                    isLoadingRegional.postValue(false); //  APAGAMOS (ERROR DE RESPUESTA)
                 }
             }
 
             @Override
             public void onFailure(Call<DeezerListResponse<Song>> call, Throwable t) {
                 errorLiveData.postValue(R.string.network_error);
+                isLoadingRegional.postValue(false); //  APAGAMOS (ERROR DE RED)
             }
         });
     }
@@ -475,7 +515,8 @@ public class MusicViewModel extends AndroidViewModel {
                 loadFavoriteIds();
             } else {
 
-                String generoReal = null;
+                // --- INICIO EXTRACCIÓN DE GÉNEROS (Multi-Match) ---
+                List<String> generosReales = new java.util.ArrayList<>();
 
                 try {
                     DeezerApiService api = RetrofitClient.getApiService();
@@ -488,8 +529,13 @@ public class MusicViewModel extends AndroidViewModel {
                         // Parseo del JSON
                         if (response.isSuccessful() && response.body() != null) {
                             DeezerAlbum albumCompleto = response.body();
-                            if (albumCompleto.genres != null && albumCompleto.genres.data != null && !albumCompleto.genres.data.isEmpty()) {
-                                generoReal = albumCompleto.genres.data.get(0).name;
+                            if (albumCompleto.genres != null && albumCompleto.genres.data != null) {
+                                // Iteramos para guardar todos los géneros que vengan en el nodo
+                                for (DeezerAlbum.GenreData genreObj : albumCompleto.genres.data) {
+                                    if (genreObj.name != null && !genreObj.name.isEmpty()) {
+                                        generosReales.add(genreObj.name);
+                                    }
+                                }
                             }
                         }
                     }
@@ -498,10 +544,11 @@ public class MusicViewModel extends AndroidViewModel {
                     e.printStackTrace();
                 }
 
-                //  Asignación de fallback si la API no devolvió género o hubo error
-                if (generoReal == null || generoReal.isEmpty()) {
-                    generoReal = getApplication().getString(R.string.unknown_genre);
+                // Asignación de fallback si la lista quedó vacía tras consultar la API
+                if (generosReales.isEmpty()) {
+                    generosReales.add(getApplication().getString(R.string.unknown_genre));
                 }
+                // --- FIN EXTRACCIÓN DE GÉNEROS ---
 
 
                 // Si no estaba, se guarda
@@ -511,8 +558,8 @@ public class MusicViewModel extends AndroidViewModel {
                 newTrack.artistName = currentSong.getNameArtist();
                 newTrack.coverUrl = currentSong.getUrlPortada();
 
-                // Inyectamos la palabra extraída en la entidad
-                newTrack.gender = generoReal;
+                // Inyectamos la colección de géneros en la entidad (ahora compatible con el TypeConverter)
+                newTrack.genres = generosReales;
 
                 playlistDao.insertTrack(newTrack);
                 playlistDao.insertTrackIntoPlaylist(relacion);
@@ -549,7 +596,7 @@ public class MusicViewModel extends AndroidViewModel {
                     Song songMap = new Song();
                     songMap.setId(entity.deezerId);
                     songMap.setTitulo(entity.title);
-                    songMap.setGender(entity.gender);
+                    songMap.setGenres(entity.genres);
 
                     Song.Artist artistMap = new Song.Artist();
                     artistMap.name = entity.artistName;
@@ -637,7 +684,7 @@ public class MusicViewModel extends AndroidViewModel {
                     Song songMap = new Song();
                     songMap.setId(entity.deezerId);
                     songMap.setTitulo(entity.title);
-                    songMap.setGender(entity.gender);
+                    songMap.setGenres(entity.genres);
 
                     Song.Artist artistMap = new Song.Artist();
                     artistMap.name = entity.artistName;
@@ -680,16 +727,21 @@ public class MusicViewModel extends AndroidViewModel {
     //  metodo para el panel deslizable (Usa la ID de la lista existente)
     public void addSongToExistingPlaylist(int playlistId, Song song) {
         executorService.execute(() -> {
-            // --- INICIO EXTRACCIÓN DE GÉNERO ---
-            String generoReal = null;
+            // --- INICIO EXTRACCIÓN DE GÉNEROS ---
+            List<String> generosReales = new java.util.ArrayList<>();
             try {
                 DeezerApiService api = RetrofitClient.getApiService();
                 if (song.getAlbumData() != null && song.getAlbumData().id > 0) {
                     retrofit2.Response<DeezerAlbum> response = api.getAlbumById(song.getAlbumData().id).execute();
                     if (response.isSuccessful() && response.body() != null) {
                         DeezerAlbum albumCompleto = response.body();
-                        if (albumCompleto.genres != null && albumCompleto.genres.data != null && !albumCompleto.genres.data.isEmpty()) {
-                            generoReal = albumCompleto.genres.data.get(0).name;
+                        if (albumCompleto.genres != null && albumCompleto.genres.data != null) {
+                            // 1. Agregamos el bucle for que faltaba
+                            for (DeezerAlbum.GenreData genreObj : albumCompleto.genres.data) {
+                                if (genreObj.name != null && !genreObj.name.isEmpty()) {
+                                    generosReales.add(genreObj.name);
+                                }
+                            }
                         }
                     }
                 }
@@ -697,10 +749,11 @@ public class MusicViewModel extends AndroidViewModel {
                 e.printStackTrace();
             }
 
-            if (generoReal == null || generoReal.isEmpty()) {
-                generoReal = getApplication().getString(R.string.unknown_genre);
+
+            if (generosReales.isEmpty()) {
+                generosReales.add(getApplication().getString(R.string.unknown_genre));
             }
-            // --- FIN EXTRACCIÓN DE GÉNERO ---
+            // --- FIN EXTRACCIÓN DE GÉNEROS ---
 
             TrackEntity trackEntity = new TrackEntity();
             trackEntity.deezerId = song.getId();
@@ -708,8 +761,8 @@ public class MusicViewModel extends AndroidViewModel {
             trackEntity.artistName = song.getNameArtist();
             trackEntity.coverUrl = song.getUrlPortada();
 
-            // Asignamos el género
-            trackEntity.gender = generoReal;
+            // 3. Asignamos la lista a la nueva propiedad plural configurada para Room
+            trackEntity.genres = generosReales;
 
             playlistDao.insertTrack(trackEntity);
 
@@ -744,16 +797,21 @@ public class MusicViewModel extends AndroidViewModel {
             // Se inserta la playlist y captura la ID autogenerada
             int autogeneratedPlaylistId = (int) playlistDao.insertPlaylist(newPlaylist);
 
-            // --- INICIO EXTRACCIÓN DE GÉNERO ---
-            String generoReal = null;
+            // --- INICIO EXTRACCIÓN DE GÉNEROS ---
+            List<String> generosReales = new java.util.ArrayList<>();
             try {
                 DeezerApiService api = RetrofitClient.getApiService();
                 if (song.getAlbumData() != null && song.getAlbumData().id > 0) {
                     retrofit2.Response<DeezerAlbum> response = api.getAlbumById(song.getAlbumData().id).execute();
                     if (response.isSuccessful() && response.body() != null) {
                         DeezerAlbum albumCompleto = response.body();
-                        if (albumCompleto.genres != null && albumCompleto.genres.data != null && !albumCompleto.genres.data.isEmpty()) {
-                            generoReal = albumCompleto.genres.data.get(0).name;
+                        if (albumCompleto.genres != null && albumCompleto.genres.data != null) {
+                            // Iteramos para extraer todos los géneros que vengan en el JSON
+                            for (DeezerAlbum.GenreData genreObj : albumCompleto.genres.data) {
+                                if (genreObj.name != null && !genreObj.name.isEmpty()) {
+                                    generosReales.add(genreObj.name);
+                                }
+                            }
                         }
                     }
                 }
@@ -761,10 +819,11 @@ public class MusicViewModel extends AndroidViewModel {
                 e.printStackTrace();
             }
 
-            if (generoReal == null || generoReal.isEmpty()) {
-                generoReal = getApplication().getString(R.string.unknown_genre);
+            // Fallback en caso de que la lista quede vacía
+            if (generosReales.isEmpty()) {
+                generosReales.add(getApplication().getString(R.string.unknown_genre));
             }
-            // --- FIN EXTRACCIÓN DE GÉNERO ---
+            // --- FIN EXTRACCIÓN DE GÉNEROS ---
 
             TrackEntity trackEntity = new TrackEntity();
             trackEntity.deezerId = song.getId();
@@ -772,8 +831,8 @@ public class MusicViewModel extends AndroidViewModel {
             trackEntity.artistName = song.getNameArtist();
             trackEntity.coverUrl = song.getUrlPortada();
 
-            // Asignamos el género
-            trackEntity.gender = generoReal;
+            // Asignamos la lista a la propiedad correcta de Room
+            trackEntity.genres = generosReales;
 
             playlistDao.insertTrack(trackEntity);
 
@@ -829,7 +888,7 @@ public class MusicViewModel extends AndroidViewModel {
                     Song songMap = new Song();
                     songMap.setId(entity.deezerId);
                     songMap.setTitulo(entity.title);
-                    songMap.setGender(entity.gender);
+                    songMap.setGenres(entity.genres);
 
                     Song.Artist artistMap = new Song.Artist();
                     artistMap.name = entity.artistName;
@@ -878,7 +937,7 @@ public class MusicViewModel extends AndroidViewModel {
                     Song songMap = new Song();
                     songMap.setId(entity.deezerId);
                     songMap.setTitulo(entity.title);
-                    songMap.setGender(entity.gender);
+                    songMap.setGenres(entity.genres);
 
                     Song.Artist artistMap = new Song.Artist();
                     artistMap.name = entity.artistName;

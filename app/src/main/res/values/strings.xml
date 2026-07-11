@@ -119,5 +119,8 @@
     <string name="latin">Latin</string>
     <string name="romantic">Romantic</string>
     <string name="unknown_genre">Unknown_genre</string>
+    <string name="folklore">Folklore</string>
+    <string name="cumbia">Cumbia</string>
+    <string name="cuarteto">Quartet</string>
 
 </resources>

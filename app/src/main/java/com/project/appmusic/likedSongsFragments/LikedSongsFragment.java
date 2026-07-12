@@ -32,8 +32,6 @@ import java.util.List;
 public class LikedSongsFragment extends Fragment {
 
     private MusicViewModel musicViewModel;
-
-    // Elementos de la vista
     private RecyclerView recyclerFavorites;
     private TextView tvSongCount;
     private TextView tvEmptyFavorites;
@@ -185,7 +183,7 @@ public class LikedSongsFragment extends Fragment {
                     (song.getTitulo() != null && song.getTitulo().toLowerCase().contains(queryLower)) ||
                     (song.getNameArtist() != null && song.getNameArtist().toLowerCase().contains(queryLower));
 
-            // Filtro de Género (Array de Chips vs Array de Géneros)
+            // Filtro de Género
             boolean matchesGenre = currentSelectedGenres.isEmpty();
 
             // Validamos usando el nuevo getter en plural
@@ -205,7 +203,7 @@ public class LikedSongsFragment extends Fragment {
                 }
             }
 
-            // Intersección (AND)
+            // Intersección
             if (matchesText && matchesGenre) {
                 filteredList.add(song);
             }

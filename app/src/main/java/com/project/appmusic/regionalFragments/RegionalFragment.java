@@ -40,8 +40,6 @@ public class RegionalFragment extends Fragment {
     private androidx.appcompat.widget.SearchView searchView;
     private ImageView btnBack;
     private RecyclerView recyclerSongs;
-
-    // Componentes del Filtro
     private HorizontalScrollView scrollFilters;
     private ChipGroup chipGroupFilters;
     private String currentSearchQuery = "";
@@ -273,7 +271,7 @@ public class RegionalFragment extends Fragment {
         musicViewModel.loadFavoriteIds();
     }
 
-    // --- MOTOR DE FILTRADO UNIFICADO ACTUALIZADO (List<String>) ---
+    // --- MOTOR DE FILTRADO UNIFICADO ---
     private void aplicarFiltros() {
         List<Song> filteredList = new ArrayList<>();
         String queryLower = currentSearchQuery.toLowerCase();

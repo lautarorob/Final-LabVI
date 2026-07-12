@@ -107,17 +107,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:singleLine="true"
-                app:singleSelection="false">
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipFolklore"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checkable="true"
-                    android:text="@string/folklore"
-                    android:textColor="@color/chip_text_regional"
-                    app:chipBackgroundColor="@color/bg_chip_regional"
-                    app:chipStrokeWidth="0dp" />
+                app:singleSelection="true"> <com.google.android.material.chip.Chip
+                android:id="@+id/chipFolklore"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:text="@string/folklore"
+                android:textColor="@color/chip_text_regional"
+                app:chipBackgroundColor="@color/bg_chip_regional"
+                app:chipStrokeColor="#00E5FF"
+                app:chipStrokeWidth="1.5dp" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipCumbia"
@@ -127,7 +126,8 @@
                     android:text="@string/cumbia"
                     android:textColor="@color/chip_text_regional"
                     app:chipBackgroundColor="@color/bg_chip_regional"
-                    app:chipStrokeWidth="0dp" />
+                    app:chipStrokeColor="#FF007F"
+                    app:chipStrokeWidth="1.5dp" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipCuarteto"
@@ -137,7 +137,8 @@
                     android:text="@string/cuarteto"
                     android:textColor="@color/chip_text_regional"
                     app:chipBackgroundColor="@color/bg_chip_regional"
-                    app:chipStrokeWidth="0dp" />
+                    app:chipStrokeColor="#FFD700"
+                    app:chipStrokeWidth="1.5dp" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipTrap"

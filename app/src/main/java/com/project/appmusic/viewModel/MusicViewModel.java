@@ -180,6 +180,15 @@ public class MusicViewModel extends AndroidViewModel {
         return isLoadingRegional;
     }
     public void downloadRegional(long playlistId) {
+        // Convertimos el ID numérico en una llave de texto única para el caché
+        String cacheKey = "TOP50_" + playlistId;
+
+        //  Verificación de caché
+        if (cacheRegional.containsKey(cacheKey)) {
+            listaRegionalLiveData.postValue(cacheRegional.get(cacheKey));
+            return; // Cortamos la ejecución, la carga es instantánea
+        }
+
         // ENCENDEMOS LA BARRA
         isLoadingRegional.postValue(true);
 
@@ -199,6 +208,10 @@ public class MusicViewModel extends AndroidViewModel {
                                 try {
                                     if (song.getAlbumData() != null && song.getAlbumData().id > 0) {
                                         retrofit2.Response<DeezerAlbum> albumResponse = api.getAlbumById(song.getAlbumData().id).execute();
+
+                                        // Válvula de seguridad anti-baneo
+                                        Thread.sleep(50);
+
                                         if (albumResponse.isSuccessful() && albumResponse.body() != null) {
                                             DeezerAlbum albumCompleto = albumResponse.body();
                                             if (albumCompleto.genres != null && albumCompleto.genres.data != null) {
@@ -219,25 +232,26 @@ public class MusicViewModel extends AndroidViewModel {
                                 song.setGenres(generosReales);
                             }
 
-                            listaRegionalLiveData.postValue(canciones);
+                            //  Guardamos la lista en el caché usando nuestra llave
+                            cacheRegional.put(cacheKey, canciones);
 
-                            //  APAGAMOS LA BARRA (ÉXITO)
+                            listaRegionalLiveData.postValue(canciones);
                             isLoadingRegional.postValue(false);
                         });
                     } else {
                         errorLiveData.postValue(R.string.regional_playlist_empty);
-                        isLoadingRegional.postValue(false); //  APAGAMOS (LISTA VACÍA)
+                        isLoadingRegional.postValue(false);
                     }
                 } else {
                     errorLiveData.postValue(R.string.error_server_response);
-                    isLoadingRegional.postValue(false); //  APAGAMOS (ERROR DE RESPUESTA)
+                    isLoadingRegional.postValue(false);
                 }
             }
 
             @Override
             public void onFailure(Call<DeezerListResponse<Song>> call, Throwable t) {
                 errorLiveData.postValue(R.string.network_error);
-                isLoadingRegional.postValue(false); //  APAGAMOS (ERROR DE RED)
+                isLoadingRegional.postValue(false);
             }
         });
     }
@@ -1015,5 +1029,84 @@ public class MusicViewModel extends AndroidViewModel {
             exoPlayer.seekTo(progress);
         }
     }
+
+    private java.util.HashMap<String, List<Song>> cacheRegional = new java.util.HashMap<>();
+    public void searchRegionalGenre(String genre) {
+        // Verificación de caché
+        if (cacheRegional.containsKey(genre)) {
+            listaRegionalLiveData.postValue(cacheRegional.get(genre));
+            return;
+        }
+
+        // Encendemos la barra de carga
+        isLoadingRegional.postValue(true);
+
+        DeezerApiService api = RetrofitClient.getApiService();
+        // Armamos una query fuerte para forzar resultados locales, ej: "Folklore Argentina"
+        String query = genre + " Argentina";
+
+        api.searchSongs(query).enqueue(new Callback<DeezerListResponse<Song>>() {
+            @Override
+            public void onResponse(Call<DeezerListResponse<Song>> call, Response<DeezerListResponse<Song>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Song> canciones = response.body().getData();
+                    if (!canciones.isEmpty()) {
+                        executorService.execute(() -> {
+                            for (Song song : canciones) {
+                                List<String> generosReales = new ArrayList<>();
+                                try {
+                                    if (song.getAlbumData() != null && song.getAlbumData().id > 0) {
+                                        retrofit2.Response<DeezerAlbum> albumResponse = api.getAlbumById(song.getAlbumData().id).execute();
+
+                                        // Válvula de seguridad anti-baneo
+                                         Thread.sleep(50);
+
+                                        if (albumResponse.isSuccessful() && albumResponse.body() != null) {
+                                            DeezerAlbum albumCompleto = albumResponse.body();
+                                            if (albumCompleto.genres != null && albumCompleto.genres.data != null) {
+                                                for (DeezerAlbum.GenreData genreObj : albumCompleto.genres.data) {
+                                                    if (genreObj.name != null && !genreObj.name.isEmpty()) {
+                                                        generosReales.add(genreObj.name);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                                if (generosReales.isEmpty()) {
+                                    generosReales.add(getApplication().getString(R.string.unknown_genre));
+                                }
+                                song.setGenres(generosReales);
+                            }
+                            // Cacheo de resultados
+                            cacheRegional.put(genre, canciones);
+
+                            // Publicamos en el mismo canal del Top 50 regional
+                            listaRegionalLiveData.postValue(canciones);
+                            isLoadingRegional.postValue(false);
+                        });
+                    } else {
+                        errorLiveData.postValue(R.string.no_results);
+                        isLoadingRegional.postValue(false);
+                    }
+                } else {
+                    errorLiveData.postValue(R.string.error_server_response);
+                    isLoadingRegional.postValue(false);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<DeezerListResponse<Song>> call, Throwable t) {
+                errorLiveData.postValue(R.string.network_error);
+                isLoadingRegional.postValue(false);
+            }
+        });
+    }
+
+
+
 }
 

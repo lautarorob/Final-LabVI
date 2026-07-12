@@ -47,6 +47,10 @@ public class RegionalFragment extends Fragment {
     private String currentSearchQuery = "";
     private List<String> currentSelectedGenres = new ArrayList<>();
 
+    private String savedCountry = "";
+
+    private boolean isShowingRemoteGenre = false;
+
     private SongAdapter songAdapter;
 
     private com.google.android.gms.location.FusedLocationProviderClient fusedLocationClient;
@@ -164,7 +168,7 @@ public class RegionalFragment extends Fragment {
         musicViewModel.getIsLoadingRegional().observe(getViewLifecycleOwner(), isLoading -> {
             if (isLoading != null && isLoading) {
                 progressBarRegional.setVisibility(View.VISIBLE);
-                recyclerSongs.setVisibility(View.GONE); // Oculta la lista vieja mientras carga
+                recyclerSongs.setVisibility(View.GONE);
             } else {
                 progressBarRegional.setVisibility(View.GONE);
                 recyclerSongs.setVisibility(View.VISIBLE);
@@ -192,14 +196,53 @@ public class RegionalFragment extends Fragment {
 
         // --- LISTENER CHIPS ---
         chipGroupFilters.setOnCheckedStateChangeListener((group, checkedIds) -> {
-            currentSelectedGenres.clear();
-            for (int id : checkedIds) {
+            if (checkedIds.isEmpty()) {
+                currentSelectedGenres.clear();
+
+                if (isShowingRemoteGenre) {
+                    // Si desmarca Folklore, Cumbia o Cuarteto: Volvemos a pedir el Top 50 a la API
+                    if (!savedCountry.isEmpty()) {
+                        musicViewModel.buscarIdPorPais(savedCountry);
+                    }
+                    isShowingRemoteGenre = false; // Reseteamos la bandera
+                } else {
+                    // Si desmarca Pop o Rock: La lista base ya es el Top 50.
+                    // No hay petición de red, solo limpiamos la UI en memoria RAM.
+                    aplicarFiltros();
+                }
+            } else {
+                int id = checkedIds.get(0);
                 Chip chip = view.findViewById(id);
                 if (chip != null) {
-                    currentSelectedGenres.add(chip.getText().toString().toLowerCase());
+                    String selectedGenre = chip.getText().toString();
+
+                    if (selectedGenre.equalsIgnoreCase(getString(R.string.folklore)) ||
+                            selectedGenre.equalsIgnoreCase(getString(R.string.cumbia)) ||
+                            selectedGenre.equalsIgnoreCase(getString(R.string.cuarteto))) {
+
+                        isShowingRemoteGenre = true; // Levantamos la bandera
+                        musicViewModel.searchRegionalGenre(selectedGenre);
+
+                    } else {
+                        // Chips locales (Pop, Rock, Trap)
+                        currentSelectedGenres.clear();
+                        currentSelectedGenres.add(selectedGenre.toLowerCase());
+
+                        if (isShowingRemoteGenre) {
+                            // Caso límite: El usuario saltó directamente de Folklore a Pop.
+                            // Necesitamos descargar el Top 50 de nuevo para poder filtrarlo.
+                            isShowingRemoteGenre = false;
+                            if (!savedCountry.isEmpty()) {
+                                musicViewModel.buscarIdPorPais(savedCountry);
+                                // Nota: Cuando la API termine, el observador llamará a aplicarFiltros() automáticamente.
+                            }
+                        } else {
+                            // Filtro en RAM instantáneo
+                            aplicarFiltros();
+                        }
+                    }
                 }
             }
-            aplicarFiltros();
         });
 
         switchLocation.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -236,32 +279,26 @@ public class RegionalFragment extends Fragment {
         String queryLower = currentSearchQuery.toLowerCase();
 
         for (Song song : originalRegionalSongs) {
-            // 1. Filtrado por Input Text
             boolean matchesText = queryLower.isEmpty() ||
                     (song.getTitulo() != null && song.getTitulo().toLowerCase().contains(queryLower)) ||
                     (song.getNameArtist() != null && song.getNameArtist().toLowerCase().contains(queryLower));
 
-            // 2. Filtrado por Array de Chips contra Array de Géneros
             boolean matchesGenre = currentSelectedGenres.isEmpty();
 
-            // Validamos usando el nuevo método getGenres() en plural
             if (!matchesGenre && song.getGenres() != null && !song.getGenres().isEmpty()) {
-                // Iteramos todos los géneros que posee la canción actual
                 for (String songGenre : song.getGenres()) {
                     String songGenreLower = songGenre.toLowerCase();
 
-                    // Comparamos contra los chips seleccionados
                     for (String selectedGenre : currentSelectedGenres) {
                         if (songGenreLower.contains(selectedGenre)) {
                             matchesGenre = true;
-                            break; // Rompe el for de chips
+                            break;
                         }
                     }
-                    if (matchesGenre) break; // Rompe el for de géneros de la canción
+                    if (matchesGenre) break;
                 }
             }
 
-            // 3. Resolución Condicional AND
             if (matchesText && matchesGenre) {
                 filteredList.add(song);
             }
@@ -304,6 +341,10 @@ public class RegionalFragment extends Fragment {
 
                                 if (pais != null && !pais.isEmpty()) {
                                     Toast.makeText(requireContext(), getString(R.string.seeking_success_in) + " " + pais, Toast.LENGTH_LONG).show();
+
+                                    // GUARDAMOS EL PAÍS AQUÍ
+                                    savedCountry = pais;
+
                                     musicViewModel.buscarIdPorPais(pais);
                                 } else {
                                     if (switchLocation != null) switchLocation.setChecked(false);

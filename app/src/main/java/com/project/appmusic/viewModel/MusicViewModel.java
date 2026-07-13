@@ -324,7 +324,12 @@ public class MusicViewModel extends AndroidViewModel {
     }
 
     private void executeInternalPlayback(Song song, List<Song> currentList) {
-        this.currentPlaybackQueue = currentList;
+        if (currentList != null) {
+            this.currentPlaybackQueue = new java.util.ArrayList<>(currentList);
+        } else {
+            this.currentPlaybackQueue = new java.util.ArrayList<>();
+        }
+
         currentSong.setValue(song);
         isPlaying.setValue(true);
         checkIsFavorite(song.getId());

@@ -20,6 +20,7 @@ import com.project.appmusic.reciclerView.SongAdapter;
 import com.project.appmusic.viewModel.MusicViewModel;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class SearchFragment extends Fragment {
 
@@ -28,6 +29,8 @@ public class SearchFragment extends Fragment {
 
     private android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
     private Runnable searchRunnable;
+
+    private List<Song> currentSearchResults = new ArrayList<>();
 
     public SearchFragment() {
         // Required empty public constructor
@@ -58,7 +61,7 @@ public class SearchFragment extends Fragment {
         songAdapter = new SongAdapter(requireContext(), new ArrayList<>(), false, true, new SongAdapter.OnSongClickListener() {
             @Override
             public void onSongClick(Song song) {
-                musicViewModel.playSong(song, null);
+                musicViewModel.playSong(song, currentSearchResults);
             }
 
             @Override
@@ -85,22 +88,10 @@ public class SearchFragment extends Fragment {
         // Observador directo de resultados de búsqueda para actualizar el adaptador existente
         musicViewModel.getSearchSongsLiveData().observe(getViewLifecycleOwner(), songs -> {
             if (songs != null && songAdapter != null) {
+                currentSearchResults = songs;
                 songAdapter.setSongs(songs);
             }
         });
-/*
-        // Modificación del Texto y Hint
-        android.widget.EditText searchEditText = searchView.findViewById(androidx.appcompat.R.id.search_src_text);
-        if (searchEditText != null) {
-            searchEditText.setTextColor(android.graphics.Color.BLACK);
-            searchEditText.setHintTextColor(android.graphics.Color.BLACK);
-        }
-
-        // Modificación del ícono de la lupa
-        android.widget.ImageView searchIcon = searchView.findViewById(androidx.appcompat.R.id.search_mag_icon);
-        if (searchIcon != null) {
-            searchIcon.setColorFilter(android.graphics.Color.BLACK);
-        }*/
 
         // Configuración de la barra de búsqueda
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -124,6 +115,7 @@ public class SearchFragment extends Fragment {
                     handler.postDelayed(searchRunnable, 500);
                 } else {
                     if (songAdapter != null) {
+                        currentSearchResults.clear();
                         songAdapter.setSongs(new ArrayList<>());
                     }
                 }

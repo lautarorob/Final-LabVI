@@ -92,6 +92,7 @@ public class PlayListFragment extends Fragment {
 
             @Override
             public void onFavoriteClick(Song song) {
+                musicViewModel.toggleFavorite(song);
             }
 
             @Override
@@ -118,7 +119,7 @@ public class PlayListFragment extends Fragment {
 
         musicViewModel.getSongsPlaylistLiveData().observe(getViewLifecycleOwner(), songs -> {
             if (songs != null && !songs.isEmpty()) {
-                originalPlaylistSongs = songs;
+                originalPlaylistSongs = new ArrayList<>(songs);
 
                 scrollFilters.setVisibility(View.VISIBLE);
                 tvEmptyPlaylist.setVisibility(View.GONE);
@@ -171,6 +172,14 @@ public class PlayListFragment extends Fragment {
         });
 
         musicViewModel.loadPlaylist(this.playlistId);
+
+        musicViewModel.getFavoriteIdsLiveData().observe(getViewLifecycleOwner(), favoriteIds -> {
+            if (songAdapter != null) {
+                songAdapter.setFavoriteIds(favoriteIds);
+            }
+        });
+
+        musicViewModel.loadFavoriteIds();
     }
 
     private void aplicarFiltros() {

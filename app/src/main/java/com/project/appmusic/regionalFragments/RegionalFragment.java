@@ -142,7 +142,7 @@ public class RegionalFragment extends Fragment {
                 if (!switchLocation.isChecked()) {
                     switchLocation.setChecked(true);
                 }
-                originalRegionalSongs = songs;
+                originalRegionalSongs = new ArrayList<>(songs);
 
                 searchView.setVisibility(View.VISIBLE);
                 scrollFilters.setVisibility(View.VISIBLE);
@@ -198,7 +198,7 @@ public class RegionalFragment extends Fragment {
                 currentSelectedGenres.clear();
 
                 if (isShowingRemoteGenre) {
-                    // Si desmarca Folklore, Cumbia o Cuarteto: Volvemos a pedir el Top 50 a la API
+                    // Si desmarca Folklore: Volvemos a pedir el Top 50 a la API
                     if (!savedCountry.isEmpty()) {
                         musicViewModel.buscarIdPorPais(savedCountry);
                     }
@@ -214,12 +214,15 @@ public class RegionalFragment extends Fragment {
                 if (chip != null) {
                     String selectedGenre = chip.getText().toString();
 
-                    if (selectedGenre.equalsIgnoreCase(getString(R.string.folklore)) ||
-                            selectedGenre.equalsIgnoreCase(getString(R.string.cumbia)) ||
-                            selectedGenre.equalsIgnoreCase(getString(R.string.cuarteto))) {
+                    // Condicional de Enrutamiento
+                    if (selectedGenre.equalsIgnoreCase(getString(R.string.folklore))) {
 
                         isShowingRemoteGenre = true; // Levantamos la bandera
-                        musicViewModel.searchRegionalGenre(selectedGenre);
+
+                        // INYECCIÓN DINÁMICA DEL PAÍS
+                        // Si por algún error el GPS falló, enviamos una cadena vacía en lugar de 'null'
+                        String paisActual = savedCountry != null ? savedCountry : "";
+                        musicViewModel.searchRegionalGenre(selectedGenre, paisActual);
 
                     } else {
                         // Chips locales (Pop, Rock, Trap)

@@ -148,27 +148,27 @@ public class MusicViewModel extends AndroidViewModel {
     }
 
     public void buscarIdPorPais(String pais) {
-        String terminoBusqueda = "Top 50" + pais;
+        String terminoBusqueda = "Top 50 " + pais;
         DeezerApiService api = RetrofitClient.getApiService();
+
+        isLoadingRegional.postValue(true);
 
         api.buscarPlaylistRegional(terminoBusqueda).enqueue(new Callback<DeezerListResponse<Playlist>>() {
             @Override
             public void onResponse(Call<DeezerListResponse<Playlist>> call, Response<DeezerListResponse<Playlist>> response) {
                 if (response.isSuccessful() && response.body() != null && !response.body().getData().isEmpty()) {
-
-                    // Extraemos el número de la lista
                     long idEncontrado = response.body().getData().get(0).getId();
-
                     downloadRegional(idEncontrado);
-
                 } else {
                     errorLiveData.postValue(R.string.no_official_playlist_found);
+                    isLoadingRegional.postValue(false);
                 }
             }
 
             @Override
             public void onFailure(Call<DeezerListResponse<Playlist>> call, Throwable t) {
                 errorLiveData.postValue(R.string.error_searching_id);
+                isLoadingRegional.postValue(false);
             }
         });
     }
@@ -186,6 +186,7 @@ public class MusicViewModel extends AndroidViewModel {
         //  Verificación de caché
         if (cacheRegional.containsKey(cacheKey)) {
             listaRegionalLiveData.postValue(cacheRegional.get(cacheKey));
+            isLoadingRegional.postValue(false);
             return; // Cortamos la ejecución, la carga es instantánea
         }
 
@@ -1036,10 +1037,16 @@ public class MusicViewModel extends AndroidViewModel {
     }
 
     private java.util.HashMap<String, List<Song>> cacheRegional = new java.util.HashMap<>();
-    public void searchRegionalGenre(String genre) {
+
+    // Modificamos la firma para recibir el país
+    public void searchRegionalGenre(String genre, String country) {
+
+        //  llave del caché
+        String cacheKey = genre + "_" + country;
+
         // Verificación de caché
-        if (cacheRegional.containsKey(genre)) {
-            listaRegionalLiveData.postValue(cacheRegional.get(genre));
+        if (cacheRegional.containsKey(cacheKey)) {
+            listaRegionalLiveData.postValue(cacheRegional.get(cacheKey));
             return;
         }
 
@@ -1047,8 +1054,9 @@ public class MusicViewModel extends AndroidViewModel {
         isLoadingRegional.postValue(true);
 
         DeezerApiService api = RetrofitClient.getApiService();
-        // Armamos una query fuerte para forzar resultados locales, ej: "Folklore Argentina"
-        String query = genre + " Argentina";
+
+        // Armamos la query concatenando el género y el país detectado por el GPS
+        String query = genre + " " + country;
 
         api.searchSongs(query).enqueue(new Callback<DeezerListResponse<Song>>() {
             @Override
@@ -1064,7 +1072,7 @@ public class MusicViewModel extends AndroidViewModel {
                                         retrofit2.Response<DeezerAlbum> albumResponse = api.getAlbumById(song.getAlbumData().id).execute();
 
                                         // Válvula de seguridad anti-baneo
-                                         Thread.sleep(50);
+                                        Thread.sleep(50);
 
                                         if (albumResponse.isSuccessful() && albumResponse.body() != null) {
                                             DeezerAlbum albumCompleto = albumResponse.body();
@@ -1087,7 +1095,7 @@ public class MusicViewModel extends AndroidViewModel {
                                 song.setGenres(generosReales);
                             }
                             // Cacheo de resultados
-                            cacheRegional.put(genre, canciones);
+                            cacheRegional.put(cacheKey, canciones);
 
                             // Publicamos en el mismo canal del Top 50 regional
                             listaRegionalLiveData.postValue(canciones);
@@ -1111,7 +1119,4 @@ public class MusicViewModel extends AndroidViewModel {
         });
     }
 
-
-
 }
-

@@ -119,28 +119,6 @@
                 app:chipStrokeWidth="1.5dp" />
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/chipCumbia"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checkable="true"
-                    android:text="@string/cumbia"
-                    android:textColor="@color/chip_text_regional"
-                    app:chipBackgroundColor="@color/bg_chip_regional"
-                    app:chipStrokeColor="#FF007F"
-                    app:chipStrokeWidth="1.5dp" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipCuarteto"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checkable="true"
-                    android:text="@string/cuarteto"
-                    android:textColor="@color/chip_text_regional"
-                    app:chipBackgroundColor="@color/bg_chip_regional"
-                    app:chipStrokeColor="#FFD700"
-                    app:chipStrokeWidth="1.5dp" />
-
-                <com.google.android.material.chip.Chip
                     android:id="@+id/chipTrap"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

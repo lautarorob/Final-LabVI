@@ -88,7 +88,7 @@ public class SearchFragment extends Fragment {
         // Observador directo de resultados de búsqueda para actualizar el adaptador existente
         musicViewModel.getSearchSongsLiveData().observe(getViewLifecycleOwner(), songs -> {
             if (songs != null && songAdapter != null) {
-                currentSearchResults = songs;
+                currentSearchResults = new ArrayList<>(songs);
                 songAdapter.setSongs(songs);
             }
         });

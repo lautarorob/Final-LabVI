@@ -796,6 +796,8 @@ public class MusicViewModel extends AndroidViewModel {
             loadFavorites();               // Actualiza la lista interna de "Me gusta"
             loadFavoriteIds();             // Actualiza los corazones
 
+            loadUserPlaylists();
+
             // notificar a la vista
             toastMessageLiveData.postValue(R.string.added_to_playlist);
         });

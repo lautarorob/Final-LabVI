@@ -217,10 +217,11 @@ public class RegionalFragment extends Fragment {
                     // Condicional de Enrutamiento
                     if (selectedGenre.equalsIgnoreCase(getString(R.string.folklore))) {
 
+                        currentSelectedGenres.clear();
+
                         isShowingRemoteGenre = true; // Levantamos la bandera
 
                         // INYECCIÓN DINÁMICA DEL PAÍS
-                        // Si por algún error el GPS falló, enviamos una cadena vacía en lugar de 'null'
                         String paisActual = savedCountry != null ? savedCountry : "";
                         musicViewModel.searchRegionalGenre(selectedGenre, paisActual);
 
@@ -231,11 +232,9 @@ public class RegionalFragment extends Fragment {
 
                         if (isShowingRemoteGenre) {
                             // Caso límite: El usuario saltó directamente de Folklore a Pop.
-                            // Necesitamos descargar el Top 50 de nuevo para poder filtrarlo.
                             isShowingRemoteGenre = false;
                             if (!savedCountry.isEmpty()) {
                                 musicViewModel.buscarIdPorPais(savedCountry);
-                                // Nota: Cuando la API termine, el observador llamará a aplicarFiltros() automáticamente.
                             }
                         } else {
                             // Filtro en RAM instantáneo
